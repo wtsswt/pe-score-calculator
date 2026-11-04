@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="swt">
 <title>国家学生体质健康标准 · 体测成绩计算器（2014 年修订版）</title>
+<meta name="description" content="按《国家学生体质健康标准（2014 年修订）》评分表实现的体测成绩计算器：选择年级与性别、录入各单项成绩，自动按权重折算标准分、累计附加分并评定等级。覆盖小学一年级至大学四年级，单文件离线可用。">
+<meta name="theme-color" content="#2f6fed">
+<meta property="og:type" content="website">
+<meta property="og:title" content="体测成绩计算器 · 国家学生体质健康标准（2014 年修订）">
+<meta property="og:description" content="选年级、选性别、填成绩，自动折算标准分与附加分并评定等级。覆盖小学至大学 16 个组别，单文件离线可用。">
+<meta property="og:url" content="https://wtsswt.github.io/pe-score-calculator/">
+<meta name="twitter:card" content="summary">
 <style>
   :root {
     --bg: #f5f6f8;
@@ -139,6 +146,8 @@
     .total-box .num { font-size: 38px; }
   }
 
+  footer.foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  footer.foot a:hover { color: var(--accent); }
   footer.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 22px; font-size: 11px; color: #b9bfc9; flex-wrap: wrap; }
 
   @media print {
@@ -273,12 +282,12 @@
   <!-- 评分表 -->
   <details class="card rules" id="rulesCard">
     <summary>评分表（附表 1-1 ~ 2-6，蓝色列即当前适用标准）</summary>
-    <p style="margin-top:10px">《标准》学年总分 = 标准分（各单项得分 × 权重求和，满分 100）+ 附加分（最多 20）。总分以 100 分为满分线，加分可使总分超过 100（最高 120）。90.0 分及以上优秀，80.0—89.9 良好，60.0—79.9 及格，59.9 分及以下不及格。小学的加分指标为 1 分钟跳绳（最多 +20）；初中、高中、大学的加分指标为男生引体向上与 1000 米跑、女生 1 分钟仰卧起坐与 800 米跑（各最多 +10）。</p>
+    <p style="margin-top:10px">下列表格取自教育部《国家学生体质健康标准（2014 年修订）》附件（教体艺〔2014〕5 号）。《标准》学年总分 = 标准分（各单项得分 × 权重求和，满分 100）+ 附加分（最多 20）。总分以 100 分为满分线，加分可使总分超过 100（最高 120）。90.0 分及以上优秀，80.0—89.9 良好，60.0—79.9 及格，59.9 分及以下不及格。小学的加分指标为 1 分钟跳绳（最多 +20）；初中、高中、大学的加分指标为男生引体向上与 1000 米跑、女生 1 分钟仰卧起坐与 800 米跑（各最多 +10）。</p>
     <div id="ruleTables"></div>
   </details>
 
   <footer class="foot">
-    <span class="ver">本页仅用于自测估算，最终成绩以学校体育教学部核定为准。</span>
+    <span class="ver">数据来源：《国家学生体质健康标准（2014 年修订）》，教育部教体艺〔2014〕5 号（<a href="https://www.moe.gov.cn/jyb_xxgk/xxgk/neirong/fenlei/sxml_twyjy/twyjy_tyws/tyws_xgzc/201407/t20140708_171692.html" target="_blank" rel="noopener">教育部官网原文</a>）。本页仅用于自测估算，最终成绩以学校体育教学部核定为准。</span>
     <span class="author">swt · AI 辅助生成</span>
   </footer>
 </div>
