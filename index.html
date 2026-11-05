@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="swt">
-<title>国家学生体质健康标准 · 体测成绩计算器（2014 年修订版）</title>
-<meta name="description" content="按《国家学生体质健康标准（2014 年修订）》评分表实现的体测成绩计算器：选择年级与性别、录入各单项成绩，自动按权重折算标准分、累计附加分并评定等级。覆盖小学一年级至大学四年级，单文件离线可用。">
+<title>体测成绩计算器 · 国家学生体质健康标准 / 北京市九年级现场考试</title>
+<meta name="description" content="体测成绩计算器，内置两套官方标准：《国家学生体质健康标准（2014 年修订）》覆盖小学一年级至大学四年级，《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》覆盖九年级 30 分制。选年级性别、录入成绩即自动计分，单文件离线可用。">
 <meta name="theme-color" content="#2f6fed">
 <meta property="og:type" content="website">
-<meta property="og:title" content="体测成绩计算器 · 国家学生体质健康标准（2014 年修订）">
-<meta property="og:description" content="选年级、选性别、填成绩，自动折算标准分与附加分并评定等级。覆盖小学至大学 16 个组别，单文件离线可用。">
+<meta property="og:title" content="体测成绩计算器 · 国家学生体质健康标准 / 北京市九年级现场考试">
+<meta property="og:description" content="内置两套官方标准：国家标准覆盖小学至大学 16 个组别（100 分制 + 附加分），北京市九年级现场考试 30 分制。填成绩即自动计分，单文件离线可用。">
 <meta property="og:url" content="https://wtsswt.github.io/pe-score-calculator/">
 <meta name="twitter:card" content="summary">
 <style>
@@ -26,6 +26,7 @@
     --bad: #b91c1c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
     background: var(--bg); color: var(--text); padding: 24px 16px 40px; line-height: 1.55;
@@ -136,13 +137,30 @@
   table.t tbody th { position: sticky; left: 0; z-index: 1; background: #fff; color: var(--muted); }
   table.t thead th:first-child { left: 0; z-index: 3; }
   table.t .hl { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  table.t.narrow { width: auto; min-width: 480px; }
+  table.t td.l { text-align: left; }
   table.t tbody tr:last-child th, table.t tbody tr:last-child td { border-bottom: 0; }
+
+  .field.xxl select { width: 300px; max-width: 320px; }
+  .static-val { border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; background: #f8fafc; color: var(--text); white-space: nowrap; }
+  .score-pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #f1f4f9; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .score-pill.got { background: var(--accent-soft); color: var(--accent); }
+  .score-pill.full { background: #ecfdf5; color: #047857; }
+  .chk-list { display: grid; gap: 5px; margin: 8px 0 12px; }
+  .chk-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; padding: 2px 0; }
+  .chk-item input { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  .chk-item .mv { margin-left: auto; color: #b0b7c3; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .radio-pills { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .radio-pills button { border: none; background: #fff; padding: 5px 16px; font-size: 12.5px; cursor: pointer; color: var(--muted); font-family: inherit; }
+  .radio-pills button.active { background: var(--accent); color: #fff; }
+  .sub-title { font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
 
   @media (max-width: 620px) {
     header { flex-wrap: wrap; }
     header h1 { font-size: 19px; }
     .card { padding: 14px 15px; }
     .field input { width: 104px; }
+    .field.xxl select { width: 100%; }
     .total-box .num { font-size: 38px; }
   }
 
@@ -170,8 +188,8 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>国家学生体质健康标准 · 体测成绩计算器</h1>
-      <p>依据《国家学生体质健康标准》2014 年修订版整理，覆盖小学一年级至大学四年级；选择年级与性别后录入各单项成绩，自动按权重折算计分、累计附加分并评定等级。填写内容自动保存在本机浏览器。</p>
+      <h1 id="pageTitle">学生体质健康 · 成绩计算器</h1>
+      <p id="pageDesc">两套官方标准可切换：①《国家学生体质健康标准（2014 年修订）》，覆盖小学一年级至大学四年级；② 北京市九年级现场考试（2023 年试行评分标准），满分 30 分。选择标准与年级性别后录入成绩即自动计分，填写内容保存在本机浏览器。</p>
     </div>
     <button class="btn" id="resetAll" type="button">重置全部</button>
   </header>
@@ -180,11 +198,22 @@
     <div>
       <!-- ① 测试对象 -->
       <div class="card">
-        <h2>① 测试对象 <span class="full">年级与性别决定适用的评分表与权重</span></h2>
+        <h2>① 测试对象 <span class="full" id="objFull">先选评分标准，再选年级与性别</span></h2>
         <div class="row" style="margin-top:10px">
-          <div class="field">
+          <div class="field xxl">
+            <label for="stdSel">评分标准</label>
+            <select id="stdSel">
+              <option value="cn" selected>国家学生体质健康标准（2014 年修订）</option>
+              <option value="bj">北京市 · 九年级现场考试（2023 试行）</option>
+            </select>
+          </div>
+          <div class="field" id="gradeField">
             <label for="grade">年级</label>
             <select id="grade"></select>
+          </div>
+          <div class="field" id="bjGradeField" hidden>
+            <label>适用年级</label>
+            <div class="static-val">九年级 · 初中毕业升学现场考试</div>
           </div>
           <div class="field">
             <label>性别</label>
@@ -193,9 +222,11 @@
               <button data-g="female" type="button">女</button>
             </div>
           </div>
-          <div class="hint" id="objHint"></div>
         </div>
+        <div class="hint" id="objHint" style="max-width:none;padding-top:8px"></div>
       </div>
+
+      <div id="cnPane">
 
       <!-- ② 参考档位 -->
       <div class="card">
@@ -250,26 +281,63 @@
         <p class="desc" id="physDesc"></p>
         <div class="row" id="physFields"></div>
       </div>
+      </div><!-- /cnPane -->
+
+      <div id="bjPane" hidden>
+        <!-- ② 素质项目Ⅰ -->
+        <div class="card">
+          <h2>② 素质项目Ⅰ <span class="full">必考 · 满分 8 分</span>
+            <button class="part-reset" type="button" data-bjfill="q1">填入满分</button>
+            <button class="part-reset" type="button" data-bjreset="q1">重置</button>
+          </h2>
+          <div class="row" id="bjQ1" style="margin-top:10px"></div>
+        </div>
+
+        <!-- ③ 素质项目Ⅱ -->
+        <div class="card">
+          <h2>③ 素质项目Ⅱ <span class="full">六选一 · 满分 8 分</span>
+            <button class="part-reset" type="button" data-bjfill="q2">填入满分</button>
+            <button class="part-reset" type="button" data-bjreset="q2">重置</button>
+          </h2>
+          <div class="row" id="bjQ2" style="margin-top:10px"></div>
+        </div>
+
+        <!-- ④ 运动能力Ⅰ -->
+        <div class="card">
+          <h2>④ 运动能力Ⅰ <span class="full">六选一 · 满分 8 分</span>
+            <button class="part-reset" type="button" data-bjfill="q3">填入满分</button>
+            <button class="part-reset" type="button" data-bjreset="q3">重置</button>
+          </h2>
+          <div class="row" id="bjQ3" style="margin-top:10px"></div>
+        </div>
+
+        <!-- ⑤ 运动能力Ⅱ -->
+        <div class="card">
+          <h2>⑤ 运动能力Ⅱ <span class="full">四选一 · 满分 6 分（动作质量 5 + 动作表现 1）</span>
+            <button class="part-reset" type="button" data-bjfill="q4">填入满分</button>
+            <button class="part-reset" type="button" data-bjreset="q4">重置</button>
+          </h2>
+          <div class="row" id="bjQ4" style="margin-top:10px"></div>
+          <div id="bjQ4Body"></div>
+        </div>
+      </div><!-- /bjPane -->
     </div>
 
     <!-- 结果区 -->
     <div class="result">
       <div class="card">
         <div class="total-box">
-          <div class="num"><span id="totalScore">0</span><small> / 100</small></div>
+          <div class="num"><span id="totalScore">0</span><small id="totalDen"> / 100</small></div>
           <div class="bar"><i id="totalBar"></i></div>
           <div class="grade"><span class="grade-tag g-fail" id="gradeTag">未填写</span></div>
         </div>
 
-        <div class="sub-item"><span class="name">标准分（满分 100）</span><span class="val" id="rStd">—</span></div>
-        <div class="sub-item"><span class="name">附加分（最多 +20，可超 100）</span><span class="val" id="rBonus">—</span></div>
-        <div class="sub-item"><span class="name">已填写项</span><span class="val" id="rFilled">0 / 0</span></div>
-        <div class="sub-item total"><span class="name">学年总分</span><span class="val" id="rTotal">0 / 100</span></div>
+        <div id="subItems"></div>
 
         <div class="detail-block">
-          <h3>单项明细（标准分 100 制）</h3>
+          <h3 id="detailTitle">单项明细</h3>
           <table class="mini">
-            <thead><tr><th>项目</th><th class="num">权重</th><th class="num">成绩</th><th class="num">得分</th><th class="num">加权</th></tr></thead>
+            <thead id="detailHead"></thead>
             <tbody id="detail"></tbody>
           </table>
         </div>
@@ -281,13 +349,13 @@
 
   <!-- 评分表 -->
   <details class="card rules" id="rulesCard">
-    <summary>评分表（附表 1-1 ~ 2-6，蓝色列即当前适用标准）</summary>
-    <p style="margin-top:10px">下列表格取自教育部《国家学生体质健康标准（2014 年修订）》附件（教体艺〔2014〕5 号）。《标准》学年总分 = 标准分（各单项得分 × 权重求和，满分 100）+ 附加分（最多 20）。总分以 100 分为满分线，加分可使总分超过 100（最高 120）。90.0 分及以上优秀，80.0—89.9 良好，60.0—79.9 及格，59.9 分及以下不及格。小学的加分指标为 1 分钟跳绳（最多 +20）；初中、高中、大学的加分指标为男生引体向上与 1000 米跑、女生 1 分钟仰卧起坐与 800 米跑（各最多 +10）。</p>
+    <summary id="rulesSummary">评分表</summary>
+    <p id="rulesIntro" style="margin-top:10px"></p>
     <div id="ruleTables"></div>
   </details>
 
   <footer class="foot">
-    <span class="ver">数据来源：《国家学生体质健康标准（2014 年修订）》，教育部教体艺〔2014〕5 号（<a href="https://www.moe.gov.cn/jyb_xxgk/xxgk/neirong/fenlei/sxml_twyjy/twyjy_tyws/tyws_xgzc/201407/t20140708_171692.html" target="_blank" rel="noopener">教育部官网原文</a>）。本页仅用于自测估算，最终成绩以学校体育教学部核定为准。</span>
+    <span class="ver">数据来源：教育部《国家学生体质健康标准（2014 年修订）》，教体艺〔2014〕5 号（<a href="https://www.moe.gov.cn/jyb_xxgk/xxgk/neirong/fenlei/sxml_twyjy/twyjy_tyws/tyws_xgzc/201407/t20140708_171692.html" target="_blank" rel="noopener">教育部官网原文</a>）；北京教育考试院《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》，2023-11-24 公布，依据京教体艺〔2021〕31 号（<a href="https://www.bjeea.cn/html/zkzz/tzgg/2023/1124/84611.html" target="_blank" rel="noopener">考试院原文</a>）。本页仅用于自测估算，最终成绩以学校或考试机构核定为准。</span>
     <span class="author">swt · AI 辅助生成</span>
   </footer>
 </div>
@@ -780,7 +848,7 @@ function fmtTime(sec){
 /* ================= UI ================= */
 const $ = id => document.getElementById(id);
 const SAVE_KEY = "tizhi-2014-calc-v1";
-const state = { g: "u1", sex: "male" };
+const state = { std: "cn", g: "u1", sex: "male" };
 const SEXMAP = { male: "m", female: "f" };
 
 /* ---------- 年级下拉 ---------- */
@@ -933,6 +1001,11 @@ function refreshPlaceholders(){
 function levelClass(level){
   return { excellent: "g-excellent", good: "g-good", pass: "g-pass", fail: "g-fail-red", none: "g-fail" }[level.key];
 }
+function renderSubItems(rows){
+  $("subItems").innerHTML = rows.map(r =>
+    '<div class="sub-item' + (r.total ? " total" : "") + '"><span class="name">' + r.name +
+    '</span><span class="val">' + r.val + '</span></div>').join("");
+}
 function displayValue(it, g, sex, vals){
   if (!it.filled) return "—";
   if (it.id === "bmi") return round1(it.bmi).toFixed(1);
@@ -940,7 +1013,7 @@ function displayValue(it, g, sex, vals){
   if (it.id === "sprint" || it.id === "sitreach") return Number(vals[it.id]).toString();
   return String(vals[it.id]);
 }
-function calc(){
+function calcCN(){
   const g = state.g, sex = SEXMAP[state.sex];
   const vals = readVals();
   const r = evaluate(g, sex, vals);
@@ -957,10 +1030,15 @@ function calc(){
     tag.textContent = "未填写";
     tag.className = "grade-tag g-fail";
   }
-  $("rStd").textContent = r.filled ? r.std.toFixed(1) : "—";
-  $("rBonus").textContent = r.filled ? ("+" + r.bonus) : "—";
-  $("rFilled").textContent = r.filled + " / " + r.count;
-  $("rTotal").textContent = (r.filled ? r.total.toFixed(1) : "0") + " / 100";
+  renderSubItems([
+    { name: "标准分（满分 100）", val: r.filled ? r.std.toFixed(1) : "—" },
+    { name: "附加分（最多 +20，可超 100）", val: r.filled ? ("+" + r.bonus) : "—" },
+    { name: "已填写项", val: r.filled + " / " + r.count },
+    { name: "学年总分", val: (r.filled ? r.total.toFixed(1) : "0") + " / 100", total: true }
+  ]);
+  $("totalDen").textContent = " / 100";
+  $("detailTitle").textContent = "单项明细（标准分 100 制）";
+  $("detailHead").innerHTML = '<tr><th>项目</th><th class="num">权重</th><th class="num">成绩</th><th class="num">得分</th><th class="num">加权</th></tr>';
 
   /* 单项明细 */
   $("detail").innerHTML = r.items.map(it => {
@@ -1028,7 +1106,13 @@ let saveTimer = null;
 function save(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot())); } catch (e) {}
+    try {
+      const o = readSaved() || {};
+      o.std = state.std;
+      if (state.std === "bj") o.bj = snapshotBJ();
+      else o.cn = snapshot();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(o));
+    } catch (e) {}
   }, 200);
 }
 function readSaved(){
@@ -1044,6 +1128,12 @@ function applySaved(o){
 
 /* ---------- 交互 ---------- */
 function onGradeOrSexChange(){
+  if (state.std === "bj"){
+    renderBJ();
+    renderRules();
+    calc();
+    return;
+  }
   const snap = snapshot();
   renderPhys(null);
   // 保留仍存在的输入值
@@ -1056,6 +1146,7 @@ function onGradeOrSexChange(){
   calc();
 }
 $("grade").addEventListener("change", () => { state.g = $("grade").value; onGradeOrSexChange(); });
+$("stdSel").addEventListener("change", () => { setStd($("stdSel").value); });
 $("genderPills").addEventListener("click", e => {
   const b = e.target.closest("button[data-g]");
   if (!b) return;
@@ -1065,6 +1156,10 @@ $("genderPills").addEventListener("click", e => {
 });
 document.addEventListener("input", e => {
   if (!e.target.matches("input")) return;
+  if (e.target.dataset.bjk){ bj.vals[e.target.dataset.bjk] = e.target.value; calc(); return; }
+  if (e.target.dataset.mv != null){
+    const arr = bjMoves(bjQ4Key()); arr[Number(e.target.dataset.i)] = e.target.checked; calc(); return;
+  }
   if (e.target.id === "height") refreshPlaceholders();
   calc();
 });
@@ -1120,6 +1215,8 @@ document.querySelectorAll("[data-reset]").forEach(b => {
 $("resetAll").addEventListener("click", () => {
   ["height","weight","vital","endurMin","endurSec"].forEach(id => { const e = $(id); if (e) e.value = ""; });
   document.querySelectorAll("input[data-fit]").forEach(e => e.value = "");
+  bj.vals = {}; bj.moves = {}; bj.perf = {};
+  if (state.std === "bj") renderBJ();
   calc();
 });
 $("tierSel").addEventListener("change", () => { refreshPlaceholders(); calc(); });
@@ -1166,8 +1263,10 @@ function bmiTableHTML(){
   });
   return h + '</tbody></table></div></details>';
 }
-function renderRules(){
+function renderCNRules(){
   const g = state.g, sex = SEXMAP[state.sex], st = stageOf(g);
+  $("rulesSummary").textContent = "评分表（附表 1-1 ~ 2-6，蓝色列即当前适用标准）";
+  $("rulesIntro").textContent = "下列表格取自教育部《国家学生体质健康标准（2014 年修订）》附件（教体艺〔2014〕5 号）。《标准》学年总分 = 标准分（各单项得分 × 权重求和，满分 100）+ 附加分（最多 20）。总分以 100 分为满分线，加分可使总分超过 100（最高 120）。90.0 分及以上优秀，80.0—89.9 良好，60.0—79.9 及格，59.9 分及以下不及格。小学的加分指标为 1 分钟跳绳（最多 +20）；初中、高中、大学的加分指标为男生引体向上与 1000 米跑、女生 1 分钟仰卧起坐与 800 米跑（各最多 +10）。";
   const isM = state.sex === "male";
   let h = bmiTableHTML();
   h += tableHTML(K("vital", sex), "表 1-" + (isM ? 3 : 4) + "　肺活量单项评分表", "mL");
@@ -1203,19 +1302,549 @@ function renderRules(){
   $("ruleTables").innerHTML = h;
 }
 
+/* =========================================================
+   北京市 · 九年级现场考试（2023 年试行评分标准）
+   表格数据照抄北京教育考试院 2023-11-24 公布稿
+   ========================================================= */
+const BJ_S1_COLS = [
+  { k: "r1000",   label: "1000 米",     unit: "分·秒", sex: "m", kind: "mmss" },
+  { k: "r800",    label: "800 米",      unit: "分·秒", sex: "f", kind: "mmss" },
+  { k: "pull",    label: "引体向上",    unit: "次",    sex: "m", kind: "int" },
+  { k: "xieshen", label: "斜身引体",    unit: "次",    sex: "f", kind: "int" },
+  { k: "dip",     label: "双杠臂屈伸",  unit: "次",    sex: "m", kind: "int" },
+  { k: "situp",   label: "仰卧起坐",    unit: "次",    sex: "f", kind: "int" },
+  { k: "ball_m",  label: "投掷实心球",  unit: "米",    sex: "m", kind: "dec" },
+  { k: "ball_f",  label: "投掷实心球",  unit: "米",    sex: "f", kind: "dec" },
+  { k: "rope_m",  label: "1 分钟跳绳",  unit: "次",    sex: "m", kind: "int" },
+  { k: "rope_f",  label: "1 分钟跳绳",  unit: "次",    sex: "f", kind: "int" },
+  { k: "jump_m",  label: "原地纵跳摸高", unit: "厘米", sex: "m", kind: "int" },
+  { k: "jump_f",  label: "原地纵跳摸高", unit: "厘米", sex: "f", kind: "int" },
+  { k: "stand_m", label: "立定跳远",    unit: "米",    sex: "m", kind: "dec" },
+  { k: "stand_f", label: "立定跳远",    unit: "米",    sex: "f", kind: "dec" }
+];
+const BJ_S1_ROWS = [
+  ["8",   "4′05″", "3′55″", "11", "40", "11", "42", "9.5", "7.6", "180", "180", "56", "45", "2.25", "1.76"],
+  ["7.5", "4′11″", "4′01″", "10", "36", "10", "40", "9.1", "7.4", "175", "175", "53", "43", "2.20", "1.72"],
+  ["7",   "4′18″", "4′08″", "9",  "32", "9",  "37", "8.7", "7.2", "170", "170", "50", "41", "2.15", "1.68"],
+  ["6.5", "4′26″", "4′16″", "8",  "28", "8",  "34", "8.3", "7.0", "165", "165", "47", "39", "2.09", "1.63"],
+  ["6",   "4′35″", "4′25″", "7",  "24", "7",  "30", "7.9", "6.8", "160", "160", "44", "37", "2.02", "1.58"],
+  ["5.5", "4′45″", "4′35″", "6",  "20", "6",  "26", "7.5", "6.4", "150", "150", "41", "35", "1.94", "1.52"],
+  ["5",   "4′55″", "4′45″", "5",  "16", "5",  "22", "7.0", "6.0", "140", "140", "38", "33", "1.85", "1.46"],
+  ["4.5", "5′01″", "4′49″", "4",  "12", "4",  "21", "6.5", "5.6", "130", "130", "35", "30", "1.83", "1.44"],
+  ["4",   "5′07″", "4′53″", "3",  "10", "3",  "20", "6.0", "5.2", "124", "124", "31", "27", "1.81", "1.42"],
+  ["3.5", "5′13″", "4′57″", "2",  "9",  "2",  "19", "5.5", "4.8", "118", "118", "27", "24", "1.78", "1.39"],
+  ["3",   "5′20″", "5′02″", "1",  "8",  "1",  "18", "5.0", "4.4", "112", "112", "23", "21", "1.75", "1.36"],
+  ["2.5", "5′27″", "5′07″", "",   "7",  "",   "17", "4.5", "4.0", "106", "106", "20", "18", "1.72", "1.33"],
+  ["2",   "5′34″", "5′12″", "",   "6",  "",   "16", "4.0", "3.6", "100", "100", "17", "15", "1.69", "1.30"],
+  ["1.5", "5′42″", "5′19″", "",   "5",  "",   "15", "3.5", "3.2", "94",  "94",  "14", "12", "1.66", "1.27"],
+  ["1",   "5′50″", "5′26″", "",   "4",  "",   "14", "3.0", "2.8", "88",  "88",  "11", "9",  "1.63", "1.24"],
+  ["0.5", "5′59″", "5′35″", "",   "3",  "",   "13", "2.5", "2.4", "82",  "82",  "8",  "6",  "1.60", "1.21"],
+  ["0",   "6′00″", "5′36″", "",   "2",  "",   "12", "2.4", "2.3", "81",  "81",  "7",  "5",  "1.59", "1.20"]
+];
+const BJ_S2_COLS = [
+  { k: "soccer_m", label: "足球运球射门",           unit: "秒",    sex: "m", kind: "sec" },
+  { k: "soccer_f", label: "足球运球射门",           unit: "秒",    sex: "f", kind: "sec" },
+  { k: "basket_m", label: "篮球运球投篮",           unit: "秒",    sex: "m", kind: "sec" },
+  { k: "basket_f", label: "篮球运球投篮",           unit: "秒",    sex: "f", kind: "sec" },
+  { k: "volley_m", label: "排球垫球发球",           unit: "分",    sex: "m", kind: "dec" },
+  { k: "volley_f", label: "排球垫球发球",           unit: "分",    sex: "f", kind: "dec" },
+  { k: "tt_m",     label: "乒乓球左推右攻发球",     unit: "次",    sex: "m", kind: "int" },
+  { k: "tt_f",     label: "乒乓球左推右攻发球",     unit: "次",    sex: "f", kind: "int" },
+  { k: "bad_m",    label: "羽毛球正反手挑球发高远球", unit: "分",   sex: "m", kind: "dec" },
+  { k: "bad_f",    label: "羽毛球正反手挑球发高远球", unit: "分",   sex: "f", kind: "dec" },
+  { k: "swim_m",   label: "100 米游泳",             unit: "分·秒", sex: "m", kind: "mmss" },
+  { k: "swim_f",   label: "100 米游泳",             unit: "分·秒", sex: "f", kind: "mmss" }
+];
+const BJ_S2_ROWS = [
+  ["8",   "19.5",  "21.0",  "30.0",  "35.0",  "14.0",  "14.0",  "56", "56", "20.0", "18.0", "-",     ""],
+  ["7.5", "20.0",  "21.5",  "32.0",  "37.0",  "13.5",  "13.5",  "52", "52", "19.0", "17.0", "-",     ""],
+  ["7",   "20.5",  "22.0",  "33.5",  "38.5",  "13.0",  "13.0",  "48", "48", "18.0", "16.0", "-",     ""],
+  ["6.5", "21.0",  "22.5",  "35.0",  "40.0",  "12.5",  "12.5",  "44", "44", "17.0", "15.0", "-",     ""],
+  ["6",   "21.5",  "23.0",  "36.5",  "41.5",  "12.0",  "12.0",  "40", "40", "16.0", "14.0", "2′25″", "2′40″"],
+  ["5.5", "22.0",  "23.5",  "37.5",  "42.5",  "10.5",  "10.5",  "36", "36", "15.0", "13.0", "2′35″", "2′48″"],
+  ["5",   "22.5",  "24.0",  "38.5",  "43.5",  "8.5",   "8.5",   "32", "32", "14.0", "12.0", "2′45″", "2′56″"],
+  ["4.5", "23.0",  "24.5",  "39.5",  "44.5",  "6.5",   "6.5",   "28", "28", "13.0", "11.0", "2′55″", "3′04″"],
+  ["4",   "23.8",  "25.3",  "40.0",  "45.0",  "6.0",   "6.0",   "24", "24", "12.0", "10.0", "3′05″", "3′12″"],
+  ["3.5", "24.6",  "26.1",  "40.5",  "45.5",  "5.5",   "5.5",   "21", "21", "11.0", "9.0",  "3′15″", "3′20″"],
+  ["3",   "25.4",  "26.9",  "41.0",  "46.0",  "4.0",   "4.0",   "18", "18", "10.0", "8.0",  "3′30″", "3′30″"],
+  ["2.5", "26.2",  "27.7",  "42.0",  "47.0",  "3.5",   "3.5",   "15", "15", "9.0",  "7.0",  "3′40″", "3′40″"],
+  ["2",   "27.0",  "28.5",  "43.0",  "48.0",  "3.0",   "3.0",   "12", "12", "7.0",  "6.0",  "3′50″", "3′50″"],
+  ["1.5", "27.8",  "29.3",  "44.0",  "49.0",  "1.5",   "1.5",   "9",  "9",  "5.0",  "5.0",  "4′00″", "4′00″"],
+  ["1",   "28.6",  "30.1",  "45.0",  "50.0",  "1.0",   "1.0",   "6",  "6",  "3.0",  "3.0",  "4′10″", "4′10″"],
+  ["0.5", "29.4",  "30.9",  "46.0",  "51.0",  "0.5",   "0.5",   "3",  "3",  "1.0",  "1.0",  "4′20″", "4′20″"],
+  ["0",   "29.5",  "31.0",  "46.1",  "51.1",  "0.0",   "0.0",   "2",  "2",  "0",    "0",    "4′21″", "4′21″"]
+];
+
+function bjDir(kind){ return (kind === "mmss" || kind === "sec") ? "low" : "high"; }
+function bjParse(v, kind){
+  if (v == null) return null;
+  const s = String(v).trim();
+  if (s === "" || s === "-") return null;
+  if (kind === "mmss"){
+    const m = /^(\d+)\D+(\d+)\D*$/.exec(s);
+    return m ? (+m[1]) * 60 + (+m[2]) : null;
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+function bjBuildTable(rows, cols){
+  return rows.map(r => [parseFloat(r[0])].concat(r.slice(1).map((v, j) => bjParse(v, cols[j].kind))));
+}
+const BJ_S1 = bjBuildTable(BJ_S1_ROWS, BJ_S1_COLS);
+const BJ_S2 = bjBuildTable(BJ_S2_ROWS, BJ_S2_COLS);
+
+function bjLook(table, ci, kind, v){
+  const low = bjDir(kind) === "low";
+  for (let i = 0; i < table.length; i++){
+    const th = table[i][1 + ci];
+    if (th == null) continue;
+    if (low ? v <= th + 1e-9 : v >= th - 1e-9) return table[i][0];
+  }
+  return 0;
+}
+function bjValueAt(table, ci, score){
+  for (let i = 0; i < table.length; i++) if (table[i][0] === score) return table[i][1 + ci];
+  return null;
+}
+function bjShow(v, kind){
+  if (v == null) return "—";
+  if (kind === "mmss") return fmtT(v);
+  if (kind === "int") return String(Math.round(v));
+  return String(v);
+}
+
+const BJ_Q2_OPTS = {
+  m: [
+    { id: "pull",  label: "引体向上",     unit: "次",   kind: "int", col: "pull" },
+    { id: "dip",   label: "双杠臂屈伸",   unit: "次",   kind: "int", col: "dip" },
+    { id: "ball",  label: "投掷实心球",   unit: "米",   kind: "dec", col: "ball_m" },
+    { id: "rope",  label: "1 分钟跳绳",   unit: "次",   kind: "int", col: "rope_m" },
+    { id: "jump",  label: "原地纵跳摸高", unit: "厘米", kind: "int", col: "jump_m" },
+    { id: "stand", label: "立定跳远",     unit: "米",   kind: "dec", col: "stand_m" }
+  ],
+  f: [
+    { id: "xieshen", label: "斜身引体",   unit: "次",   kind: "int", col: "xieshen" },
+    { id: "situp",   label: "仰卧起坐",   unit: "次",   kind: "int", col: "situp" },
+    { id: "ball",    label: "投掷实心球", unit: "米",   kind: "dec", col: "ball_f" },
+    { id: "rope",    label: "1 分钟跳绳", unit: "次",   kind: "int", col: "rope_f" },
+    { id: "jump",    label: "原地纵跳摸高", unit: "厘米", kind: "int", col: "jump_f" },
+    { id: "stand",   label: "立定跳远",   unit: "米",   kind: "dec", col: "stand_f" }
+  ]
+};
+const BJ_Q3_OPTS = [
+  { id: "soccer", label: "足球 — 运球射门",             unit: "秒",    kind: "sec",  max: 8 },
+  { id: "basket", label: "篮球 — 运球投篮",             unit: "秒",    kind: "sec",  max: 8 },
+  { id: "volley", label: "排球 — 垫球发球",             unit: "分",    kind: "dec",  max: 8 },
+  { id: "tt",     label: "乒乓球 — 左推右攻发球",       unit: "次",    kind: "int",  max: 8 },
+  { id: "bad",    label: "羽毛球 — 正反手挑球发高远球", unit: "分",    kind: "dec",  max: 8 },
+  { id: "swim",   label: "100 米游泳（表内最高 6 分）", unit: "分·秒", kind: "mmss", max: 6 }
+];
+const BJ_Q4_OPTS = {
+  m: [
+    { id: "double",   label: "体操 — 双杠组合Ⅰ（男）" },
+    { id: "floor",    label: "体操 — 技巧组合Ⅰ（男）" },
+    { id: "changquan", label: "武术 — 健身长拳" },
+    { id: "nanquan",  label: "武术 — 健身南拳" }
+  ],
+  f: [
+    { id: "double",   label: "体操 — 双杠组合Ⅱ（女）" },
+    { id: "floor",    label: "体操 — 技巧组合Ⅱ（女）" },
+    { id: "changquan", label: "武术 — 健身长拳" },
+    { id: "nanquan",  label: "武术 — 健身南拳" }
+  ]
+};
+const BJ_MOVES = {
+  double_m: { label: "体操 — 双杠组合Ⅰ（男）", kind: "gym", moves: [
+    ["杠端跳上成分腿坐", 1], ["前进一次成分腿坐", 1], ["弹杠举腿进杠", 1],
+    ["支撑后摆转体 180° 成分腿坐", 1], ["弹杠进杠前摆下", 1] ] },
+  double_f: { label: "体操 — 双杠组合Ⅱ（女）", kind: "gym", moves: [
+    ["杠端跳上成分腿坐", 1], ["前进一次", 1], ["成外侧坐", 1],
+    ["转体 180° 成分腿坐", 1], ["弹杠进杠前摆下", 1] ] },
+  floor_m: { label: "体操 — 技巧组合Ⅰ（男）", kind: "gym", moves: [
+    ["鱼跃前滚翻", 1], ["交叉转体 180°", 1], ["后滚成肩肘倒立", 1],
+    ["前滚成蹲立", 1], ["挺身跳", 1] ] },
+  floor_f: { label: "体操 — 技巧组合Ⅱ（女）", kind: "gym", moves: [
+    ["前滚翻", 1], ["交叉转体 180°", 1], ["后滚成肩肘倒立", 1],
+    ["前滚成蹲立", 1], ["挺身跳", 1] ] },
+  changquan: { label: "武术 — 健身长拳", kind: "wushu", moves: [
+    ["起势", 0.5], ["开步双劈", 0.5], ["按掌前推", 0.5], ["搂手勾踢", 0.5], ["缠腕斩拳", 0.5],
+    ["闪身冲拳", 0.5], ["弹踢穿顶", 0.5], ["掼拳戳脚", 0.5], ["闪身砍推", 0.5], ["收势", 0.5] ] },
+  nanquan: { label: "武术 — 健身南拳", kind: "wushu", moves: [
+    ["起势", 0.5], ["架桥双砸拳", 0.5], ["缠桥切掌", 0.5], ["麒麟步双蝶掌", 1],
+    ["踩腿撞拳", 0.5], ["挡桥冲拳", 0.5], ["闪身虎爪", 0.5], ["上步抽拳", 0.5], ["架桥双砸拳", 0.5] ] }
+};
+const BJ_PERF_CRIT = {
+  gym: "动作表现（1 分）：60 秒内完成、遗漏和错误累计不超过 1 次、态度认真、整套连贯有节奏、起止动作规范 → 一等（1 分）；否则二等（0 分）。",
+  wushu: "动作表现（1 分）：60 秒内完成、遗漏和错误累计不超过 2 次、劲力充足、节奏分明、手眼身法步协调、拳种风格突出、抱拳礼规范 → 一等（1 分）；否则二等（0 分）。"
+};
+
+const bj = { q2: "pull", q3: "soccer", q4: "double", vals: {}, moves: {}, perf: {} };
+function bjSex(){ return state.sex === "male" ? "m" : "f"; }
+function bjMoves(key){ if (!bj.moves[key]) bj.moves[key] = []; return bj.moves[key]; }
+function bjQ4Key(){
+  return (bj.q4 === "double" || bj.q4 === "floor") ? bj.q4 + "_" + bjSex() : bj.q4;
+}
+
+/* ---------- 北京：输入区渲染 ---------- */
+function renderBJ(){
+  const sex = bjSex();
+  if (!BJ_Q2_OPTS[sex].some(o => o.id === bj.q2)) bj.q2 = BJ_Q2_OPTS[sex][0].id;
+  if (!BJ_Q4_OPTS[sex].some(o => o.id === bj.q4)) bj.q4 = BJ_Q4_OPTS[sex][0].id;
+
+  /* ② 素质项目Ⅰ */
+  const c1 = sex === "m" ? "r1000" : "r800";
+  const i1 = BJ_S1_COLS.findIndex(c => c.k === c1);
+  const full1 = bjValueAt(BJ_S1, i1, 8), mid1 = bjValueAt(BJ_S1, i1, 6), low1 = bjValueAt(BJ_S1, i1, 0);
+  $("bjQ1").innerHTML =
+    '<div class="field"><label>' + (sex === "m" ? "1000 米跑" : "800 米跑") + '（分 · 秒）</label>' +
+      '<div class="timebox">' +
+        '<input type="number" data-bjk="q1m" min="0" max="30" step="1" placeholder="' + Math.floor(full1 / 60) + '" value="' + (bj.vals.q1m || "") + '"><span>分</span>' +
+        '<input type="number" data-bjk="q1s" min="0" max="59" step="1" placeholder="' + String(full1 % 60).padStart(2, "0") + '" value="' + (bj.vals.q1s || "") + '"><span>秒</span>' +
+      '</div></div>' +
+    '<div class="hint">满分 ' + fmtT(full1) + ' · 6 分线 ' + fmtT(mid1) + ' · 0 分线 ' + fmtT(low1) + '</div>';
+
+  /* ③ 素质项目Ⅱ */
+  const o2 = BJ_Q2_OPTS[sex].find(o => o.id === bj.q2);
+  const i2 = BJ_S1_COLS.findIndex(c => c.k === o2.col);
+  const full2 = bjValueAt(BJ_S1, i2, 8);
+  $("bjQ2").innerHTML =
+    '<div class="field wide"><label>选考项目</label><select data-bjsel="q2">' +
+      BJ_Q2_OPTS[sex].map(o => '<option value="' + o.id + '"' + (o.id === bj.q2 ? " selected" : "") + '>' + o.label + '</option>').join("") +
+    '</select></div>' +
+    '<div class="field"><label>' + o2.label + '（' + o2.unit + '）</label>' +
+      '<input type="number" data-bjk="q2_' + o2.id + '" step="' + (o2.kind === "dec" ? "0.1" : "1") + '" placeholder="' + full2 + '" value="' + (bj.vals["q2_" + o2.id] || "") + '"></div>' +
+    '<div class="hint">满分线 ' + full2 + ' ' + o2.unit + '</div>';
+
+  /* ④ 运动能力Ⅰ */
+  const o3 = BJ_Q3_OPTS.find(o => o.id === bj.q3);
+  const i3 = BJ_S2_COLS.findIndex(c => c.k === o3.id + "_" + sex);
+  const full3 = bjValueAt(BJ_S2, i3, o3.max);
+  let in3;
+  if (o3.id === "swim"){
+    const sec = full3;
+    in3 = '<div class="field"><label>成绩（分 · 秒）</label><div class="timebox">' +
+      '<input type="number" data-bjk="q3_swim_m" min="0" max="30" step="1" placeholder="' + (sec == null ? "" : Math.floor(sec / 60)) + '" value="' + (bj.vals.q3_swim_m || "") + '"><span>分</span>' +
+      '<input type="number" data-bjk="q3_swim_s" min="0" max="59" step="1" placeholder="' + (sec == null ? "" : String(sec % 60).padStart(2, "0")) + '" value="' + (bj.vals.q3_swim_s || "") + '"><span>秒</span>' +
+      '</div></div>';
+  } else {
+    in3 = '<div class="field"><label>' + o3.label.replace(/^.*— /, "") + '（' + o3.unit + '）</label>' +
+      '<input type="number" data-bjk="q3_' + o3.id + '" step="' + (o3.kind === "int" ? "1" : "0.1") + '" placeholder="' + (full3 == null ? "" : full3) + '" value="' + (bj.vals["q3_" + o3.id] || "") + '"></div>';
+  }
+  $("bjQ3").innerHTML =
+    '<div class="field wide"><label>选考项目</label><select data-bjsel="q3">' +
+      BJ_Q3_OPTS.map(o => '<option value="' + o.id + '"' + (o.id === bj.q3 ? " selected" : "") + '>' + o.label + '</option>').join("") +
+    '</select></div>' + in3 +
+    '<div class="hint">满分线 ' + (full3 == null ? "—" : bjShow(full3, o3.kind)) + (o3.kind === "mmss" ? "" : " " + o3.unit) + '</div>';
+
+  /* ⑤ 运动能力Ⅱ */
+  const key = bjQ4Key();
+  const def = BJ_MOVES[key];
+  const arr = bjMoves(key);
+  const perf = bj.perf[key] || "first";
+  let h = '<div class="row"><div class="field wide"><label>选考项目</label><select data-bjsel="q4">' +
+    BJ_Q4_OPTS[sex].map(o => '<option value="' + o.id + '"' + (o.id === bj.q4 ? " selected" : "") + '>' + o.label + '</option>').join("") +
+    '</select></div></div>';
+  h += '<p class="sub-title">动作质量（满分 5 分）：勾选“正确完成”的动作；漏做或做错的动作不勾选，其分值即被扣除。</p><div class="chk-list">';
+  def.moves.forEach(([name, pt], i) => {
+    h += '<label class="chk-item"><input type="checkbox" data-mv="1" data-i="' + i + '"' + (arr[i] ? " checked" : "") + '>' +
+      '<span>' + (i + 1) + '. ' + name + '</span><span class="mv">' + pt + ' 分</span></label>';
+  });
+  h += '</div><p class="sub-title">动作表现（满分 1 分）</p><div class="radio-pills">' +
+    '<button type="button" data-p="first"' + (perf !== "second" ? ' class="active"' : '') + '>一等 1 分</button>' +
+    '<button type="button" data-p="second"' + (perf === "second" ? ' class="active"' : '') + '>二等 0 分</button>' +
+    '</div><p class="desc" style="margin:10px 0 0">' + BJ_PERF_CRIT[def.kind] + '</p>';
+  $("bjQ4Body").innerHTML = h;
+
+  $("objHint").textContent = "现场考试满分 30 分 = 素质项目Ⅰ（8 分，必考）+ 素质项目Ⅱ（8 分）+ 运动能力Ⅰ（8 分）+ 运动能力Ⅱ（6 分），后三类各选考 1 项。成绩达到表中某一档标准即得该档分值。";
+}
+
+/* ---------- 北京：计分 ---------- */
+function bjScore(){
+  const sex = bjSex();
+  const items = [];
+
+  const c1 = sex === "m" ? "r1000" : "r800";
+  const i1 = BJ_S1_COLS.findIndex(c => c.k === c1);
+  const m = bj.vals.q1m, s = bj.vals.q1s;
+  const v1 = ((m == null || m === "") && (s == null || s === "")) ? null : (parseFloat(m) || 0) * 60 + (parseFloat(s) || 0);
+  items.push({ name: sex === "m" ? "素质项目Ⅰ · 1000 米跑" : "素质项目Ⅰ · 800 米跑",
+    short: sex === "m" ? "素质Ⅰ · 1000 米" : "素质Ⅰ · 800 米", max: 8,
+    txt: v1 == null ? "—" : fmtT(v1), score: v1 == null ? null : bjLook(BJ_S1, i1, "mmss", v1) });
+
+  const o2 = BJ_Q2_OPTS[sex].find(x => x.id === bj.q2);
+  const i2 = BJ_S1_COLS.findIndex(c => c.k === o2.col);
+  const r2 = bj.vals["q2_" + o2.id];
+  const v2 = (r2 == null || r2 === "") ? null : parseFloat(r2);
+  items.push({ name: "素质项目Ⅱ · " + o2.label, short: "素质Ⅱ · " + o2.label, max: 8,
+    txt: v2 == null ? "—" : bjShow(v2, o2.kind) + " " + o2.unit,
+    score: v2 == null ? null : bjLook(BJ_S1, i2, o2.kind, v2) });
+
+  const o3 = BJ_Q3_OPTS.find(x => x.id === bj.q3);
+  const i3 = BJ_S2_COLS.findIndex(c => c.k === o3.id + "_" + sex);
+  let v3 = null;
+  if (o3.id === "swim"){
+    const mm = bj.vals.q3_swim_m, ss = bj.vals.q3_swim_s;
+    if (!((mm == null || mm === "") && (ss == null || ss === ""))) v3 = (parseFloat(mm) || 0) * 60 + (parseFloat(ss) || 0);
+  } else {
+    const rr = bj.vals["q3_" + o3.id];
+    if (rr != null && rr !== "") v3 = parseFloat(rr);
+  }
+  items.push({ name: "运动能力Ⅰ · " + o3.label.replace(/（.*?）/, ""),
+    short: "能力Ⅰ · " + o3.label.replace(/（.*?）/, "").replace(/^\S+ — /, ""), max: o3.max,
+    txt: v3 == null ? "—" : bjShow(v3, o3.kind) + (o3.kind === "mmss" ? "" : " " + o3.unit),
+    score: v3 == null ? null : bjLook(BJ_S2, i3, o3.kind, v3) });
+
+  const key = bjQ4Key();
+  const def = BJ_MOVES[key];
+  const arr = bjMoves(key);
+  const q = def.moves.reduce((a, mv, i) => a + (arr[i] ? mv[1] : 0), 0);
+  const pf = bj.perf[key] === "second" ? 0 : 1;
+  const touched = arr.some(Boolean);
+  items.push({ name: "运动能力Ⅱ · " + def.label.replace(/^.*— /, ""),
+    short: "能力Ⅱ · " + def.label.replace(/^.*— /, "").replace(/（.*?）/, ""), max: 6,
+    txt: touched ? ("质量 " + q.toFixed(1) + " + 表现 " + pf) : "—", score: touched ? q + pf : null });
+
+  return items;
+}
+
+function calcBJ(){
+  const items = bjScore();
+  const filled = items.filter(i => i.score != null).length;
+  const total = items.reduce((a, i) => a + (i.score || 0), 0);
+  const rate = total / 30 * 100;
+
+  $("totalScore").textContent = filled ? total.toFixed(1) : "0";
+  $("totalScore").parentNode.classList.remove("over");
+  $("totalBar").style.width = Math.max(0, Math.min(100, rate)) + "%";
+  $("totalBar").className = "";
+  $("totalDen").textContent = " / 30";
+
+  const tag = $("gradeTag");
+  if (filled){
+    tag.textContent = "得分率 " + rate.toFixed(1) + "%";
+    tag.className = "grade-tag " + (rate >= 90 ? "g-excellent" : rate >= 80 ? "g-good" : rate >= 60 ? "g-pass" : "g-fail-red");
+  } else {
+    tag.textContent = "未填写";
+    tag.className = "grade-tag g-fail";
+  }
+
+  renderSubItems(items.map(i => ({
+    name: i.name, val: (i.score == null ? "—" : i.score.toFixed(1)) + " / " + i.max
+  })).concat([{ name: "现场考试总分", val: (filled ? total.toFixed(1) : "0") + " / 30", total: true }]));
+
+  $("detailTitle").textContent = "单项明细（30 分制）";
+  $("detailHead").innerHTML = '<tr><th>项目</th><th class="num">成绩</th><th class="num">得分</th></tr>';
+  $("detail").innerHTML = items.map(i => {
+    const cls = i.score == null ? "" : (i.score / i.max >= 0.9 ? "hi" : i.score / i.max >= 0.6 ? "" : "low");
+    return '<tr><td>' + i.short + '</td><td class="num">' + i.txt + '</td>' +
+      '<td class="num ' + cls + '">' + (i.score == null ? "—" : i.score.toFixed(1) + " / " + i.max) + '</td></tr>';
+  }).join("");
+
+  const warns = [];
+  if (!filled) warns.push(["info", "填写任意一项成绩或勾选动作即开始计分。"]);
+  else if (filled < 4) warns.push(["info", "还有 " + (4 - filled) + " 项未填，未填项按 0 分计入。"]);
+  if (bj.q3 === "swim"){
+    warns.push(["", "100 米游泳在原表中最高只列到 6 分（其余项目满分 8 分），所以选游泳会少 2 分的潜在空间。"]);
+  }
+  if (filled){
+    warns.push(["info", "北京市现场考试按 30 分制计分，官方不设等级；上方“得分率”只作横向参照。体育与健康考试总分 70 分 = 过程性考核 40 分 + 现场考试 30 分，本页只估算现场考试这 30 分。"]);
+    if (total >= 27) warns.push(["ok", "现场考试拿到 27 分以上，折算满分率 90% 以上。"]);
+  }
+  $("warnings").innerHTML = warns.map(([cls, t]) =>
+    '<div class="warning ' + cls + '">' + t + '</div>').join("");
+
+  save();
+}
+
+/* ---------- 北京：评分表 ---------- */
+function bjTableHTML(title, cols, table, sex, hlKey){
+  let h = '<details><summary>' + title + '</summary><div class="scroll"><table class="t"><thead><tr><th>分值</th>';
+  cols.forEach(c => {
+    const hl = c.sex === sex && (hlKey == null || c.k === hlKey);
+    h += '<th class="' + (hl ? "hl" : "") + '">' + c.label + '<br><span style="font-weight:400">' + (c.sex === "m" ? "男" : "女") + '</span></th>';
+  });
+  h += '</tr></thead><tbody>';
+  table.forEach(row => {
+    h += '<tr><th>' + row[0] + '</th>';
+    cols.forEach((c, j) => {
+      const hl = c.sex === sex && (hlKey == null || c.k === hlKey);
+      h += '<td class="' + (hl ? "hl" : "") + '">' + bjShow(row[1 + j], c.kind) + '</td>';
+    });
+    h += '</tr>';
+  });
+  return h + '</tbody></table></div></details>';
+}
+function bjMoveTableHTML(){
+  let h = '<details><summary>表三　运动能力Ⅱ 赋分规则（每项 6 分 = 动作质量 5 分 + 动作表现 1 分）</summary>';
+  h += '<p>动作质量：在 60 秒内按规定顺序完成整套动作，动作无遗漏和错误得 5 分；出现遗漏或错误，扣除相应动作的分值。动作表现：一等 1 分、二等 0 分。两项之和即该项目得分。</p>';
+  ["double_m", "double_f", "floor_m", "floor_f", "changquan", "nanquan"].forEach(k => {
+    const d = BJ_MOVES[k];
+    h += '<p class="tt">' + d.label + '</p><div class="scroll"><table class="t narrow"><thead><tr><th>序号</th><th class="l">动作</th><th>分值</th></tr></thead><tbody>';
+    d.moves.forEach((mv, i) => {
+      h += '<tr><th>' + (i + 1) + '</th><td class="l">' + mv[0] + '</td><td>' + mv[1] + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  });
+  h += '<p class="tt">动作表现等级标准</p><div class="scroll"><table class="t"><thead><tr><th>等级</th><th class="l">标准</th><th>赋分</th></tr></thead><tbody>' +
+    '<tr><th>一等</th><td class="l">体操：60 秒内完成；遗漏和错误累计不超过 1 次；态度认真；整套动作连贯、有节奏；开始、结束动作规范。<br>武术：60 秒内完成；遗漏和错误累计不超过 2 次；劲力充足、精神饱满、节奏分明，手眼身法步配合协调；拳种风格突出；抱拳礼规范。</td><td>1</td></tr>' +
+    '<tr><th>二等</th><td class="l">60 秒内未完成；遗漏和错误累计超过限次；态度不认真；动作很不连贯、缺乏节奏；起止动作不规范；不能体现拳种风格。</td><td>0</td></tr>' +
+    '</tbody></table></div>';
+  return h + '</details>';
+}
+function renderBJRules(){
+  const sex = bjSex();
+  $("rulesSummary").textContent = "评分表（北京市现场考试，蓝色列即当前适用标准）";
+  $("rulesIntro").textContent = "下列表格取自北京教育考试院 2023 年 11 月 24 日公布的《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》（依据京教体艺〔2021〕31 号方案）。现场考试满分 30 分 = 素质项目Ⅰ（8）+ 素质项目Ⅱ（8）+ 运动能力Ⅰ（8）+ 运动能力Ⅱ（6）；素质项目Ⅰ为必考，其余三类各选考 1 项。成绩达到表中某一档标准即得该档分值，未达最低一档计 0 分。经市教委批准，该标准自公布起试行。";
+  $("ruleTables").innerHTML =
+    bjTableHTML("表一　素质项目Ⅰ、Ⅱ（10 项）· 每项 8 分", BJ_S1_COLS, BJ_S1, sex, null) +
+    bjTableHTML("表二　运动能力Ⅰ（5 项）及 100 米游泳 · 每项 8 分（游泳最高 6 分）", BJ_S2_COLS, BJ_S2, sex, bj.q3 + "_" + sex) +
+    bjMoveTableHTML();
+}
+
+/* ---------- 北京：填入 / 重置 ---------- */
+function bjFill(kind){
+  const sex = bjSex();
+  if (kind === "q1"){
+    const ci = BJ_S1_COLS.findIndex(c => c.k === (sex === "m" ? "r1000" : "r800"));
+    const v = bjValueAt(BJ_S1, ci, 8);
+    bj.vals.q1m = String(Math.floor(v / 60));
+    bj.vals.q1s = String(v % 60);
+  } else if (kind === "q2"){
+    const o = BJ_Q2_OPTS[sex].find(x => x.id === bj.q2);
+    const ci = BJ_S1_COLS.findIndex(c => c.k === o.col);
+    const v = bjValueAt(BJ_S1, ci, 8);
+    if (v != null) bj.vals["q2_" + o.id] = String(v);
+  } else if (kind === "q3"){
+    const o = BJ_Q3_OPTS.find(x => x.id === bj.q3);
+    const ci = BJ_S2_COLS.findIndex(c => c.k === o.id + "_" + sex);
+    const v = bjValueAt(BJ_S2, ci, o.max);
+    if (v != null){
+      if (o.id === "swim"){ bj.vals.q3_swim_m = String(Math.floor(v / 60)); bj.vals.q3_swim_s = String(v % 60); }
+      else bj.vals["q3_" + o.id] = String(v);
+    }
+  } else {
+    const key = bjQ4Key();
+    const arr = bjMoves(key);
+    BJ_MOVES[key].moves.forEach((mv, i) => { arr[i] = true; });
+    bj.perf[key] = "first";
+  }
+  renderBJ();
+  calc();
+}
+function bjResetKind(kind){
+  if (kind === "q1"){ delete bj.vals.q1m; delete bj.vals.q1s; }
+  if (kind === "q2"){ BJ_Q2_OPTS[bjSex()].forEach(o => delete bj.vals["q2_" + o.id]); }
+  if (kind === "q3"){
+    BJ_Q3_OPTS.forEach(o => {
+      delete bj.vals["q3_" + o.id];
+      delete bj.vals["q3_" + o.id + "_m"];
+      delete bj.vals["q3_" + o.id + "_s"];
+    });
+  }
+  if (kind === "q4"){ bj.moves = {}; bj.perf = {}; }
+  renderBJ();
+  calc();
+}
+
+/* ---------- 北京：存档 ---------- */
+function snapshotBJ(){
+  return { sex: state.sex, q2: bj.q2, q3: bj.q3, q4: bj.q4, vals: bj.vals, moves: bj.moves, perf: bj.perf };
+}
+function applyBJSaved(o){
+  if (!o) return;
+  if (o.q2) bj.q2 = o.q2;
+  if (o.q3) bj.q3 = o.q3;
+  if (o.q4) bj.q4 = o.q4;
+  if (o.vals) bj.vals = o.vals;
+  if (o.moves) bj.moves = o.moves;
+  if (o.perf) bj.perf = o.perf;
+}
+
+/* ---------- 标准切换 ---------- */
+function syncPaneUI(){
+  const isBJ = state.std === "bj";
+  $("cnPane").hidden = isBJ;
+  $("bjPane").hidden = !isBJ;
+  $("gradeField").hidden = isBJ;
+  $("bjGradeField").hidden = !isBJ;
+  $("objFull").textContent = isBJ ? "北京市现场考试只考九年级，无年级可选" : "年级与性别决定适用的评分表与权重";
+}
+function setStd(v){
+  const cnSnap = snapshot();
+  state.std = v;
+  $("stdSel").value = v;
+  syncPaneUI();
+  if (v === "bj"){
+    renderBJ();
+    renderBJRules();
+    calcBJ();
+  } else {
+    renderPhys(cnSnap);
+    renderCNRules();
+    calcCN();
+  }
+}
+function calc(){ state.std === "bj" ? calcBJ() : calcCN(); }
+function renderRules(){ state.std === "bj" ? renderBJRules() : renderCNRules(); }
+
+/* 北京区按钮 */
+document.querySelectorAll("[data-bjfill]").forEach(b => {
+  b.addEventListener("click", () => {
+    bjFill(b.dataset.bjfill);
+    b.classList.add("done");
+    setTimeout(() => b.classList.remove("done"), 700);
+  });
+});
+document.querySelectorAll("[data-bjreset]").forEach(b => {
+  b.addEventListener("click", () => {
+    bjResetKind(b.dataset.bjreset);
+    b.classList.add("done");
+    setTimeout(() => b.classList.remove("done"), 700);
+  });
+});
+$("bjPane").addEventListener("change", e => {
+  const k = e.target.dataset.bjsel;
+  if (!k) return;
+  bj[k] = e.target.value;
+  renderBJ();
+  calc();
+});
+$("bjPane").addEventListener("click", e => {
+  const p = e.target.closest("[data-p]");
+  if (!p) return;
+  bj.perf[bjQ4Key()] = p.dataset.p;
+  renderBJ();
+  calc();
+});
+
 /* ---------- 启动 ---------- */
 function boot(){
-  const saved = readSaved();
-  if (saved){
-    if (saved.grade) state.g = saved.grade;
-    if (saved.sex) state.sex = saved.sex;
+  const saved = readSaved() || {};
+  state.std = saved.std === "bj" ? "bj" : "cn";
+  const cnSaved = saved.cn || (saved.grade ? saved : null);
+  if (cnSaved){
+    if (cnSaved.grade) state.g = cnSaved.grade;
+    if (cnSaved.sex) state.sex = cnSaved.sex;
   }
+  if (state.std === "bj" && saved.bj && saved.bj.sex) state.sex = saved.bj.sex;
+  applyBJSaved(saved.bj);
+
   $("grade").value = state.g;
+  $("stdSel").value = state.std;
   document.querySelectorAll("#genderPills button").forEach(b => b.classList.toggle("active", b.dataset.g === state.sex));
+  syncPaneUI();
+
   renderPhys(null);
-  applySaved(saved);
-  renderRules();
-  calc();
+  applySaved(cnSaved);
+
+  if (state.std === "bj"){
+    renderBJ();
+    renderBJRules();
+    calcBJ();
+  } else {
+    renderCNRules();
+    calcCN();
+  }
   const jw = $("jsWarn"); if (jw) jw.remove();
 }
 boot();
