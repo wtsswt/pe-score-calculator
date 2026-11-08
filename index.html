@@ -6,228 +6,328 @@
 <meta name="author" content="swt">
 <title>体测成绩计算器 · 国家学生体质健康标准 / 北京市九年级现场考试</title>
 <meta name="description" content="体测成绩计算器，内置两套官方标准：《国家学生体质健康标准（2014 年修订）》覆盖小学一年级至大学四年级，《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》覆盖九年级 30 分制。选年级性别、录入成绩即自动计分，单文件离线可用。">
-<meta name="theme-color" content="#2f6fed">
+<meta name="theme-color" content="#f7f8fa">
 <meta property="og:type" content="website">
 <meta property="og:title" content="体测成绩计算器 · 国家学生体质健康标准 / 北京市九年级现场考试">
-<meta property="og:description" content="内置两套官方标准：国家标准覆盖小学至大学 16 个组别（100 分制 + 附加分），北京市九年级现场考试 30 分制。填成绩即自动计分，单文件离线可用。">
+<meta property="og:description" content="内置两套官方标准：国家标准覆盖小学至大学 14 个组别（100 分制 + 附加分），北京市九年级现场考试 30 分制。填成绩即自动计分，单文件离线可用。">
 <meta property="og:url" content="https://wtsswt.github.io/pe-score-calculator/">
 <meta name="twitter:card" content="summary">
 <style>
-  :root {
-    --bg: #f5f6f8;
-    --card: #ffffff;
-    --border: #e4e7ec;
-    --text: #1f2430;
-    --muted: #6b7280;
-    --accent: #2f6fed;
-    --accent-soft: #eaf1ff;
-    --ok: #0f766e;
-    --warn: #b45309;
-    --bad: #b91c1c;
+/* ============================================================
+   体测成绩计算器 · 视觉系统 v2（仅样式层）
+   浅色底 / 白卡片 / 墨黑按钮 / 清爽蓝点缀，无大面积深色块
+   ============================================================ */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-2: #f4f6f9;
+  --line: #e6eaf0;
+  --line-2: #d9dfe8;
+  --ink: #171c26;
+  --ink-2: #5b6575;
+  --ink-3: #929bab;
+  --brand: #2563eb;
+  --brand-deep: #1d4ed8;
+  --brand-soft: #eaf1ff;
+  --ok: #0b6b4f;
+  --warn: #9a5b08;
+  --bad: #b42318;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(23, 32, 51, .04), 0 10px 30px -22px rgba(23, 32, 51, .30);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+::selection { background: rgba(37, 99, 235, .18); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: radial-gradient(1100px 520px at 50% -240px, rgba(37, 99, 235, .06), transparent 70%), var(--bg);
+  color: var(--ink); padding: 40px 20px 56px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+
+/* 页头 */
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+header h1 { font-size: 27px; font-weight: 700; letter-spacing: -.02em; line-height: 1.3; min-width: 0; }
+header p { color: var(--ink-2); font-size: 13px; line-height: 1.75; margin-top: 8px; max-width: 720px; }
+.btn {
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-2);
+  border-radius: 9px; padding: 8px 14px; font-size: 12.5px; font-weight: 500;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+  transition: border-color .15s, color .15s, background .15s, transform .15s;
+}
+.btn:hover { border-color: var(--brand); color: var(--brand); background: var(--surface); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { font-weight: 600; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 348px; gap: 18px; align-items: start; }
+@media (max-width: 920px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* 分段选择器 */
+.gender-pills, .radio-pills {
+  display: inline-flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface-2); overflow: hidden;
+}
+.gender-pills button, .radio-pills button {
+  border: none; background: transparent; border-radius: 7px;
+  padding: 6px 18px; font-size: 13px; font-family: inherit; color: var(--ink-2);
+  cursor: pointer; transition: background .15s, color .15s, box-shadow .15s;
+}
+.radio-pills button { font-size: 12.5px; padding: 5px 16px; }
+.gender-pills button:hover, .radio-pills button:hover { color: var(--ink); }
+.gender-pills button.active, .radio-pills button.active {
+  background: var(--surface); color: var(--ink); font-weight: 650;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, .13);
+}
+
+/* 卡片 */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card h2 {
+  font-size: 14.5px; font-weight: 650; color: var(--ink);
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px;
+}
+.card h2 .full { font-size: 12px; color: var(--ink-3); font-weight: 400; }
+.card h2 .part-reset {
+  margin-left: auto; align-self: center; flex-shrink: 0;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  border-radius: 7px; padding: 4px 11px; font-size: 11.5px; font-weight: 500;
+  cursor: pointer; transition: all .15s; line-height: 1.5; font-family: inherit;
+}
+.card h2 .part-reset:hover { border-color: var(--line-2); color: var(--ink); background: var(--surface-2); }
+.card h2 .part-reset.done { border-color: #a9c6ff; color: var(--brand-deep); background: #eef4ff; }
+.card .desc { font-size: 12.5px; line-height: 1.7; color: var(--ink-2); margin: 6px 0 14px; max-width: 720px; }
+.card .desc.tight { margin: 10px 0 6px; }
+
+/* 表单 */
+.row { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 12px; align-items: flex-end; }
+.row:last-child { margin-bottom: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 11.5px; font-weight: 500; letter-spacing: .02em; color: var(--ink-2); }
+.field label .w { color: var(--ink-3); font-size: 11px; margin-left: 3px; }
+.field input, .field select {
+  border: 1px solid var(--line-2); border-radius: 9px; padding: 8px 11px;
+  height: 38px; width: 122px; font-size: 14px;
+  background: var(--surface-2); color: var(--ink); font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.field select { width: auto; max-width: 240px; }
+.field input:focus, .field select:focus {
+  outline: none; border-color: var(--brand); background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+.field input::placeholder { color: #a9b3c4; }
+.field.wide input, .field.wide select { width: 200px; }
+.field.xxl select { width: 320px; max-width: 340px; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.timebox { display: flex; align-items: center; gap: 5px; }
+.timebox input { width: 64px; }
+.timebox span { font-size: 12px; color: var(--ink-2); }
+.hint { font-size: 12px; line-height: 1.65; color: var(--ink-2); padding-bottom: 8px; max-width: 460px; }
+.static-val {
+  border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px;
+  height: 38px; display: flex; align-items: center;
+  font-size: 12.5px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap;
+}
+.sub-title { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; color: var(--ink-3); margin: 4px 0 8px; }
+.score-pill {
+  font-size: 11.5px; font-weight: 650; padding: 4px 11px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.score-pill.got { background: var(--brand-soft); color: var(--brand-deep); }
+.score-pill.full { background: #dcf3e7; color: var(--ok); }
+.chk-list { display: grid; gap: 6px; margin: 10px 0 14px; }
+.chk-item {
+  display: flex; align-items: center; gap: 9px; font-size: 12.5px;
+  cursor: pointer; padding: 5px 8px; border-radius: 8px; transition: background .15s;
+}
+.chk-item:hover { background: var(--surface-2); }
+.chk-item input { width: 15px; height: 15px; accent-color: var(--brand); cursor: pointer; flex-shrink: 0; }
+.chk-item .mv { margin-left: auto; color: var(--ink-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+
+/* 结果面板：与左侧一致的浅色卡片，靠字号与留白突出总分 */
+.result { position: sticky; top: 20px; }
+.total-box {
+  text-align: center; padding: 6px 0 16px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--line); background: none; color: var(--ink);
+}
+.total-box .num {
+  font-size: 48px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05;
+  color: var(--brand); font-variant-numeric: tabular-nums;
+}
+.total-box .num small { font-size: 15px; color: var(--ink-3); font-weight: 400; letter-spacing: 0; }
+.total-box .num.over { color: #b45309; }
+.total-box .grade { font-size: 13px; margin-top: 8px; }
+.bar { height: 6px; border-radius: 999px; background: #e9edf4; overflow: hidden; margin: 14px 0 0; }
+.bar > i {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, var(--brand));
+  transition: width .25s ease, background .25s ease;
+}
+.bar > i.over { background: linear-gradient(90deg, #60a5fa, #f59e0b); }
+.grade-tag { display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.g-excellent { background: #d8f2e9; color: #0b6b4f; }
+.g-good { background: #e2eefb; color: #255f9c; }
+.g-pass { background: #fdf0d9; color: #96610a; }
+.g-fail { background: #eef1f6; color: #66746f; }
+.g-fail-red { background: #fde9e7; color: #b42318; }
+
+.result .sub-item {
+  display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px;
+  padding: 8px 0; border-bottom: 1px solid #f1f4f8;
+}
+.result .sub-item .name { color: var(--ink-2); }
+.result .sub-item .val { font-weight: 650; font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
+.result .sub-item.total { border-bottom: none; padding-top: 12px; padding-bottom: 4px; }
+.result .sub-item.total .name { color: var(--ink); font-weight: 650; }
+.result .sub-item.total .val { color: var(--brand-deep); font-size: 15px; font-weight: 700; }
+
+.result .detail-block { margin: 12px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
+.result .detail-block h3 { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--ink-3); margin-bottom: 8px; }
+table.mini { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 4px; }
+table.mini th, table.mini td { border-bottom: 1px solid #f1f4f8; padding: 6px 4px; text-align: left; }
+table.mini th { color: var(--ink-3); font-weight: 600; }
+table.mini td.num, table.mini th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.mini td.low { color: var(--bad); }
+table.mini td.hi { color: var(--ok); }
+
+.result .warnings { margin: 12px 0 0; }
+.result .warnings:empty { display: none; }
+.warning {
+  background: #fdf0ee; border: 1px solid #f3d5d0; color: var(--bad);
+  font-size: 12px; line-height: 1.6; border-radius: 9px; padding: 8px 11px; margin-bottom: 7px;
+}
+.warning.info { background: var(--surface-2); border-color: var(--line); color: var(--ink-2); }
+.warning.ok { background: #e9f7ef; border-color: #c8e9d7; color: var(--ok); }
+
+/* 评分表折叠区 */
+.rules summary { cursor: pointer; font-weight: 650; font-size: 14.5px; list-style: none; position: relative; padding-right: 24px; }
+.rules summary::-webkit-details-marker { display: none; }
+.rules summary::after {
+  content: ""; position: absolute; right: 4px; top: 50%; width: 7px; height: 7px;
+  margin-top: -5px; border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(45deg); transition: transform .2s, margin-top .2s;
+}
+.rules[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.rules h3 { font-size: 13px; font-weight: 650; margin: 18px 0 8px; }
+.rules p { font-size: 12.5px; line-height: 1.75; margin-bottom: 8px; color: var(--ink-2); }
+.rules .tt { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; color: var(--ink-3); margin: 14px 0 4px; }
+.rules details { border-top: 1px dashed var(--line-2); margin-top: 10px; padding-top: 10px; }
+.rules details summary { font-size: 12.5px; color: var(--brand); font-weight: 600; cursor: pointer; list-style: none; position: relative; padding-right: 22px; }
+.rules details summary::-webkit-details-marker { display: none; }
+.rules details summary::after { width: 6px; height: 6px; right: 3px; border-color: var(--brand); }
+.rules details[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.rules details p { margin-top: 8px; }
+
+.scroll { overflow: auto; max-height: 520px; border: 1px solid var(--line); border-radius: 10px; margin-top: 10px; background: var(--surface); }
+.scroll::-webkit-scrollbar { width: 9px; height: 9px; }
+.scroll::-webkit-scrollbar-thumb { background: #dbe2ec; border-radius: 9px; border: 2px solid var(--surface); }
+.scroll::-webkit-scrollbar-track { background: transparent; }
+table.t { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+table.t th, table.t td { text-align: center; padding: 7px 10px; white-space: nowrap; border-bottom: 1px solid #f1f4f8; font-weight: 400; color: var(--ink); }
+table.t thead th { position: sticky; top: 0; z-index: 2; background: var(--surface-2); color: var(--ink-2); font-weight: 600; }
+table.t tbody th { position: sticky; left: 0; z-index: 1; background: var(--surface); color: var(--ink-2); }
+table.t thead th:first-child { left: 0; z-index: 3; }
+table.t .hl { background: var(--brand-soft); color: var(--brand-deep); font-weight: 650; }
+table.t.narrow { width: auto; min-width: 480px; }
+table.t td.l { text-align: left; }
+table.t tbody tr:last-child th, table.t tbody tr:last-child td { border-bottom: 0; }
+
+/* 脚本未执行时的提示（覆盖内联样式，保持视觉统一） */
+#jsWarn {
+  background: #fdf3f1 !important; border: 1px solid #f3d5d0 !important;
+  border-radius: 12px !important; color: #9a2d20 !important;
+  box-shadow: var(--shadow); padding: 14px 18px !important;
+  font: 13px/1.75 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+}
+
+footer.foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line);
+  font-size: 11px; line-height: 1.7; color: var(--ink-3); flex-wrap: wrap;
+}
+footer.foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--line-2); }
+footer.foot a:hover { color: var(--brand); text-decoration-color: var(--brand); }
+
+@media (max-width: 620px) {
+  body { padding: 28px 16px 40px; }
+  header { flex-wrap: wrap; }
+  header h1 { font-size: 22px; }
+  .card { padding: 16px 16px; }
+  .field input { width: 104px; }
+  .field.xxl select { width: 100%; max-width: 100%; }
+  .total-box .num { font-size: 42px; }
+
+  /* iOS 上输入框字号小于 16px 会在聚焦时自动放大页面，这里统一到 16px */
+  .field input, .field select { font-size: 16px; padding: 10px 12px; height: auto; min-height: 44px; }
+  .field select { max-width: 100%; }
+  .timebox input { width: 70px; }
+
+  /* 触摸目标不小于 44×44 */
+  .btn { padding: 11px 16px; font-size: 13.5px; min-height: 44px; }
+  .gender-pills button { padding: 11px 26px; min-height: 44px; }
+  .part-reset { padding: 6px 12px; font-size: 12px; min-height: 32px; }
+  .row { gap: 12px 14px; }
+  .hint { padding-bottom: 2px; }
+}
+
+@media print {
+  body { background: #fff; padding: 0; }
+  .gender-pills, .part-reset, .rules, header .btn, .mbar { display: none; }
+  .result { position: static; }
+  .card { box-shadow: none; border-color: #ddd; }
+  .bar { background: #eee; }
+  .bar > i { background: #333 !important; }
+}
+
+/* ===== 移动端底部实时总分条 ===== */
+.mbar { display: none; }
+@media screen and (max-width: 920px) {
+  body { padding-bottom: 96px; }
+  .mbar {
+    display: flex; align-items: center; gap: 12px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, .92);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    backdrop-filter: saturate(180%) blur(18px);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 24px rgba(23, 32, 51, .08);
+    transition: transform .22s ease, opacity .22s ease;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  [hidden] { display: none !important; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: var(--bg); color: var(--text); padding: 24px 16px 40px; line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
+  /* 结果卡片本身在视野内时收起，避免同一信息重复两次 */
+  body.bar-off .mbar { transform: translateY(115%); opacity: 0; pointer-events: none; }
+  .mbar-main {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px;
+    background: none; border: 0; padding: 0; margin: 0; cursor: pointer;
+    font-family: inherit; text-align: left; color: inherit;
+    -webkit-tap-highlight-color: transparent;
   }
-  .wrap { max-width: 1100px; margin: 0 auto; }
-  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
-  header h1 { font-size: 22px; font-weight: 700; letter-spacing: .2px; min-width: 0; }
-  header p { color: var(--muted); font-size: 12.5px; margin-top: 4px; max-width: 760px; }
-  .btn {
-    border: 1px solid var(--border); background: #fff; color: var(--muted); border-radius: 8px;
-    padding: 6px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; white-space: nowrap;
+  .mbar-score {
+    flex-shrink: 0; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05;
+    color: var(--brand); font-variant-numeric: tabular-nums;
   }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn.primary:hover { background: #2059c9; border-color: #2059c9; color: #fff; }
-
-  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
-  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
-
-  .gender-pills { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: #fff; }
-  .gender-pills button { border: none; background: transparent; padding: 6px 22px; font-size: 13.5px; cursor: pointer; color: var(--muted); font-family: inherit; }
-  .gender-pills button.active { background: var(--accent); color: #fff; }
-
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
-  .card h2 { font-size: 15px; font-weight: 700; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
-  .card h2 .full { font-size: 12px; color: var(--muted); font-weight: 400; }
-  .card h2 .part-reset {
-    margin-left: auto; align-self: center; flex-shrink: 0;
-    border: 1px solid var(--border); background: #fff; color: var(--muted);
-    border-radius: 6px; padding: 2px 10px; font-size: 11.5px; font-weight: 400;
-    cursor: pointer; transition: all .15s; line-height: 1.6; font-family: inherit;
+  .mbar-score.over { color: #b45309; }
+  .mbar-score i { font-style: normal; font-size: 11.5px; font-weight: 400; color: var(--ink-3); margin-left: 2px; }
+  .mbar-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .mbar-grade { align-self: flex-start; font-size: 11.5px; padding: 2px 9px; }
+  .mbar-progress { display: block; height: 4px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .mbar-progress > i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--brand); transition: width .25s ease, background .25s ease; }
+  .mbar-progress > i.over { background: linear-gradient(90deg, var(--brand), #e8a33c); }
+  .mbar-btn {
+    flex-shrink: 0; min-height: 40px; padding: 0 16px;
+    border: 1px solid var(--line-2); border-radius: 9px; background: var(--surface);
+    color: var(--ink); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
-  .card h2 .part-reset:hover { border-color: #cbd5e1; color: var(--text); background: #f8fafc; }
-  .card h2 .part-reset.done { border-color: #86efac; color: #15803d; background: #f0fdf4; }
-  .card .desc { font-size: 12px; color: var(--muted); margin: 4px 0 12px; }
-  .card .desc.tight { margin: 10px 0 6px; }
-
-  .row { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 10px; align-items: flex-end; }
-  .row:last-child { margin-bottom: 0; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--muted); }
-  .field label .w { color: #b0b7c3; font-size: 11px; margin-left: 3px; }
-  .field input, .field select {
-    border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 14px;
-    width: 118px; background: #fff; color: var(--text); font-variant-numeric: tabular-nums;
-    font-family: inherit;
-  }
-  .field select { width: auto; max-width: 230px; }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,111,237,.10); }
-  .field input::placeholder { color: #c2c8d2; }
-  .field.wide input, .field.wide select { width: 190px; }
-  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .timebox { display: flex; align-items: center; gap: 4px; }
-  .timebox input { width: 62px; }
-  .timebox span { font-size: 12px; color: var(--muted); }
-  .hint { font-size: 12px; color: var(--muted); padding-bottom: 8px; max-width: 420px; }
-
-  .result { position: sticky; top: 16px; }
-  .total-box { text-align: center; padding: 6px 0 12px; border-bottom: 1px dashed var(--border); margin-bottom: 10px; }
-  .total-box .num { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1.1; font-variant-numeric: tabular-nums; }
-  .total-box .num small { font-size: 16px; color: var(--muted); font-weight: 400; }
-  .total-box .num.over { color: #d97706; }
-  .total-box .grade { font-size: 13px; margin-top: 4px; }
-  .bar { height: 6px; border-radius: 999px; background: #eef1f5; overflow: hidden; margin: 10px 0 2px; }
-  .bar > i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--accent); transition: width .25s ease, background .25s ease; }
-  .bar > i.over { background: linear-gradient(90deg, var(--accent), #e8890c); }
-  .grade-tag { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-  .g-excellent { background: #e0f2fe; color: #0369a1; }
-  .g-good { background: #ccfbf1; color: #0f766e; }
-  .g-pass { background: #fef3c7; color: #b45309; }
-  .g-fail { background: #f3f4f6; color: #6b7280; }
-  .g-fail-red { background: #fee2e2; color: #b91c1c; }
-
-  .sub-item { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 5px 0; border-bottom: 1px solid #f1f3f6; }
-  .sub-item .name { color: var(--muted); }
-  .sub-item .val { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
-  .sub-item.total { border-bottom: none; padding-top: 7px; }
-  .sub-item.total .name { color: var(--text); font-weight: 600; }
-  .sub-item.total .val { color: var(--accent); font-size: 15px; }
-
-  .detail-block { margin-top: 12px; }
-  .detail-block h3 { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 3px; }
-  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 3px; }
-  table.mini th, table.mini td { border-bottom: 1px solid #f1f3f6; padding: 3px 4px; text-align: left; }
-  table.mini th { color: var(--muted); font-weight: 500; }
-  table.mini td.num, table.mini th.num { text-align: right; font-variant-numeric: tabular-nums; }
-  table.mini td.low { color: var(--bad); }
-  table.mini td.hi { color: var(--ok); }
-
-  .warnings { margin-top: 12px; }
-  .warning { background: #fef2f2; border: 1px solid #fecaca; color: var(--bad); font-size: 12.5px; border-radius: 8px; padding: 7px 10px; margin-bottom: 6px; }
-  .warning.info { background: #f8fafc; border-color: var(--border); color: var(--muted); }
-  .warning.ok { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
-
-  .rules summary { cursor: pointer; font-weight: 700; font-size: 15px; }
-  .rules h3 { font-size: 13px; margin: 16px 0 6px; }
-  .rules p { font-size: 12.5px; margin-bottom: 6px; color: #3b4250; }
-  .rules .tt { font-size: 12px; color: var(--muted); font-weight: 600; margin: 10px 0 2px; }
-  .rules details { border-top: 1px dashed var(--border); margin-top: 8px; padding-top: 8px; }
-  .rules details summary { font-size: 12.5px; color: var(--accent); font-weight: 600; cursor: pointer; }
-  .rules details p { margin-top: 6px; }
-
-  .scroll { overflow: auto; max-height: 520px; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; }
-  table.t { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; font-variant-numeric: tabular-nums; }
-  table.t th, table.t td { text-align: center; padding: 4px 9px; white-space: nowrap; border-bottom: 1px solid #f1f3f6; font-weight: 400; }
-  table.t thead th { position: sticky; top: 0; z-index: 2; background: #f8fafc; color: var(--muted); font-weight: 600; }
-  table.t tbody th { position: sticky; left: 0; z-index: 1; background: #fff; color: var(--muted); }
-  table.t thead th:first-child { left: 0; z-index: 3; }
-  table.t .hl { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-  table.t.narrow { width: auto; min-width: 480px; }
-  table.t td.l { text-align: left; }
-  table.t tbody tr:last-child th, table.t tbody tr:last-child td { border-bottom: 0; }
-
-  .field.xxl select { width: 300px; max-width: 320px; }
-  .static-val { border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; background: #f8fafc; color: var(--text); white-space: nowrap; }
-  .score-pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #f1f4f9; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .score-pill.got { background: var(--accent-soft); color: var(--accent); }
-  .score-pill.full { background: #ecfdf5; color: #047857; }
-  .chk-list { display: grid; gap: 5px; margin: 8px 0 12px; }
-  .chk-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; padding: 2px 0; }
-  .chk-item input { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
-  .chk-item .mv { margin-left: auto; color: #b0b7c3; font-size: 11.5px; font-variant-numeric: tabular-nums; }
-  .radio-pills { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
-  .radio-pills button { border: none; background: #fff; padding: 5px 16px; font-size: 12.5px; cursor: pointer; color: var(--muted); font-family: inherit; }
-  .radio-pills button.active { background: var(--accent); color: #fff; }
-  .sub-title { font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
-
-  /* ===== 移动端底部实时总分条 ===== */
-  .mbar { display: none; }
-  @media (max-width: 920px) {
-    body { padding-bottom: 86px; }
-    .mbar {
-      display: flex; align-items: center; gap: 10px;
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-      padding: 9px 14px calc(9px + env(safe-area-inset-bottom, 0px));
-      background: rgba(255, 255, 255, .96);
-      -webkit-backdrop-filter: saturate(180%) blur(14px);
-      backdrop-filter: saturate(180%) blur(14px);
-      border-top: 1px solid var(--border);
-      box-shadow: 0 -3px 16px rgba(15, 23, 42, .07);
-      transition: transform .22s ease, opacity .22s ease;
-    }
-    /* 结果卡片本身在视野内时收起，避免同一信息重复两次 */
-    body.bar-off .mbar { transform: translateY(115%); opacity: 0; pointer-events: none; }
-    .mbar-main {
-      flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px;
-      background: none; border: 0; padding: 0; margin: 0; cursor: pointer;
-      font-family: inherit; text-align: left; color: inherit;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mbar-score {
-      flex-shrink: 0; font-size: 25px; font-weight: 800; line-height: 1.05;
-      color: var(--accent); font-variant-numeric: tabular-nums;
-    }
-    .mbar-score.over { color: #d97706; }
-    .mbar-score i { font-style: normal; font-size: 11.5px; font-weight: 400; color: var(--muted); margin-left: 1px; }
-    .mbar-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-    .mbar-grade { align-self: flex-start; font-size: 11.5px; padding: 1px 8px; }
-    .mbar-progress { display: block; height: 4px; border-radius: 999px; background: #eef1f5; overflow: hidden; }
-    .mbar-progress > i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--accent); transition: width .25s ease, background .25s ease; }
-    .mbar-progress > i.over { background: linear-gradient(90deg, var(--accent), #e8890c); }
-    .mbar-btn {
-      flex-shrink: 0; min-height: 40px; padding: 0 15px;
-      border: 1px solid var(--border); border-radius: 9px; background: #fff;
-      color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mbar-btn:active { background: #f1f5f9; }
-  }
-
-  @media (max-width: 620px) {
-    header { flex-wrap: wrap; }
-    header h1 { font-size: 19px; }
-    .card { padding: 14px 15px; }
-    .field input { width: 104px; }
-    .field.xxl select { width: 100%; }
-    .total-box .num { font-size: 38px; }
-
-    /* iOS 上输入框字号小于 16px 会在聚焦时自动放大页面，这里统一到 16px */
-    .field input, .field select { font-size: 16px; padding: 10px 12px; min-height: 44px; }
-    .field select { max-width: 100%; }
-    .timebox input { width: 70px; }
-
-    /* 触摸目标不小于 44×44 */
-    .btn { padding: 11px 16px; font-size: 13.5px; min-height: 44px; }
-    .gender-pills button { padding: 11px 26px; min-height: 44px; }
-    .part-reset { padding: 6px 12px; font-size: 12px; min-height: 32px; }
-    .row { gap: 12px 14px; }
-    .hint { padding-bottom: 2px; }
-  }
-
-  footer.foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-  footer.foot a:hover { color: var(--accent); }
-  footer.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 22px; font-size: 11px; color: #b9bfc9; flex-wrap: wrap; }
-
-  @media print {
-    body { background: #fff; padding: 0; }
-    .gender-pills, .part-reset, .rules, header .btn, .mbar { display: none; }
-    .result { position: static; }
-  }
+  .mbar-btn:active { background: var(--surface-2); }
+}
 </style>
 </head>
 <body>
@@ -244,7 +344,7 @@
   <header>
     <div>
       <h1 id="pageTitle">学生体质健康 · 成绩计算器</h1>
-      <p id="pageDesc">两套官方标准可切换：①《国家学生体质健康标准（2014 年修订）》，覆盖小学一年级至大学四年级；② 北京市九年级现场考试（2023 年试行评分标准），满分 30 分。选择标准与年级性别后录入成绩即自动计分，填写内容保存在本机浏览器。</p>
+      <p id="pageDesc">两套官方标准可切换：①《国家学生体质健康标准（2014 年修订）》，覆盖小学一年级至大学四年级；② 北京市九年级现场考试评分标准（2023 年公布，试行），满分 30 分。选择标准与年级性别后录入成绩即自动计分，填写内容保存在本机浏览器。</p>
     </div>
     <button class="btn" id="resetAll" type="button">重置全部</button>
   </header>
@@ -258,8 +358,8 @@
           <div class="field xxl">
             <label for="stdSel">评分标准</label>
             <select id="stdSel">
-              <option value="cn" selected>国家学生体质健康标准（2014 年修订）</option>
-              <option value="bj">北京市 · 九年级现场考试（2023 试行）</option>
+              <option value="cn" selected>国家学生体质健康标准</option>
+              <option value="bj">北京市 · 九年级现场考试</option>
             </select>
           </div>
           <div class="field" id="gradeField">
@@ -311,8 +411,8 @@
           <button class="part-reset" type="button" data-reset="body">重置</button>
         </h2>
         <div class="row" style="margin-top:10px">
-          <div class="field"><label for="height">身高（cm）</label><input type="number" id="height" min="80" max="230" step="0.5" placeholder="175"></div>
-          <div class="field"><label for="weight">体重（kg）</label><input type="number" id="weight" min="15" max="250" step="0.1" placeholder="65"></div>
+          <div class="field"><label for="height">身高（厘米）</label><input type="number" id="height" min="80" max="230" step="0.5" placeholder="175"></div>
+          <div class="field"><label for="weight">体重（千克）</label><input type="number" id="weight" min="15" max="250" step="0.1" placeholder="65"></div>
           <div class="hint" id="bmiHint"></div>
         </div>
       </div>
@@ -323,7 +423,7 @@
           <button class="part-reset" type="button" data-reset="func">重置</button>
         </h2>
         <div class="row" style="margin-top:10px">
-          <div class="field"><label for="vital">肺活量（mL）</label><input type="number" id="vital" min="300" max="9000" step="10" placeholder="4200"></div>
+          <div class="field"><label for="vital">肺活量（毫升）</label><input type="number" id="vital" min="300" max="9000" step="10" placeholder="4200"></div>
           <div class="hint" id="vitalHint"></div>
         </div>
       </div>
@@ -410,7 +510,7 @@
   </details>
 
   <footer class="foot">
-    <span class="ver">数据来源：教育部《国家学生体质健康标准（2014 年修订）》，教体艺〔2014〕5 号（<a href="https://www.moe.gov.cn/jyb_xxgk/xxgk/neirong/fenlei/sxml_twyjy/twyjy_tyws/tyws_xgzc/201407/t20140708_171692.html" target="_blank" rel="noopener">教育部官网原文</a>）；北京教育考试院《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》，2023-11-24 公布，依据京教体艺〔2021〕31 号（<a href="https://www.bjeea.cn/html/zkzz/tzgg/2023/1124/84611.html" target="_blank" rel="noopener">考试院原文</a>）。本页仅用于自测估算，最终成绩以学校或考试机构核定为准。</span>
+    <span class="ver">数据来源：教育部《国家学生体质健康标准（2014 年修订）》，教体艺〔2014〕5 号（<a href="https://www.moe.gov.cn/jyb_xxgk/xxgk/neirong/fenlei/sxml_twyjy/twyjy_tyws/tyws_xgzc/201407/t20140708_171692.html" target="_blank" rel="noopener">教育部官网原文</a>）；北京市教育委员会《北京市义务教育体育与健康考核评价方案》，京教体艺〔2021〕31 号（<a href="https://www.beijing.gov.cn/zhengce/zhengcefagui/202112/t20211209_2557431.html" target="_blank" rel="noopener">方案原文</a>，确定九年级现场考试、30 分制与四类项目）；北京教育考试院《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》，2023-11-24 公布（<a href="https://www.bjeea.cn/html/zkzz/tzgg/2023/1124/84611.html" target="_blank" rel="noopener">考试院原文</a>）。本页仅用于自测估算，最终成绩以学校或考试机构核定为准。</span>
     <span class="author">swt · AI 辅助生成</span>
   </footer>
 </div>
@@ -783,7 +883,7 @@ function itemLabel(itemId, sex, g){
 }
 function itemUnit(itemId){
   switch (itemId){
-    case 'bmi': return 'kg/m²';
+    case 'bmi': return '千克/米²';
     case 'vital': return '毫升';
     case 'sprint': return '秒';
     case 'sitreach': return '厘米';
@@ -791,7 +891,7 @@ function itemUnit(itemId){
     case 'situp': return '次';
     case 'stand': return '厘米';
     case 'pull': return '次';
-    case 'endur': return '分 : 秒';
+    case 'endur': return '分·秒';
   }
   return '';
 }
@@ -1127,9 +1227,9 @@ function calcCN(){
     warns.push(['info', '还有 ' + (r.count - r.filled) + ' 项未填，未填项按 0 分计入。']);
   }
   if (r.filled){
-    if (r.total >= 90) warns.push(['ok', '达到优秀（≥90），可获体育奖学分。']);
+    if (r.total >= 90) warns.push(['ok', '达到优秀（≥90），可参加评优与评奖，并可获体育奖学分。']);
     else if (r.total >= 80) warns.push(['ok', '达到良好（≥80），可参加评优与评奖。']);
-    else if (r.total >= 60) warns.push(['info', '未达良好（80 分），按《标准》不能参加评优与评奖。']);
+    else if (r.total >= 60) warns.push(['info', '未达良好（80 分），按《标准》不能参加评优与评奖（免予执行《标准》的残疾学生除外）。']);
     else warns.push(['', '不及格：本学年度可补测一次，补测仍不及格则学年成绩记为不及格。']);
   }
   if (r.bonus > 0){
@@ -1145,10 +1245,10 @@ function calcCN(){
   const bc = BMI[sex], bci = bmiColIndex(bc.cols, g);
   $("bmiHint").textContent = bmi
     ? "BMI " + bmi.toFixed(1) + " · " + bmiLabel(g, sex, bmi) + " · " + bmiScore(g, sex, bmi) + " 分（正常区间 " +
-      bc.lo[bci].toFixed(1) + "—" + bc.hi[bci].toFixed(1) + "）"
-    : "正常区间 " + bc.lo[bci].toFixed(1) + "—" + bc.hi[bci].toFixed(1) + "（低体重、超重记 80 分，≥" + bc.ob[bci].toFixed(1) + " 记肥胖 60 分）";
+      bc.lo[bci].toFixed(1) + "~" + bc.hi[bci].toFixed(1) + "）"
+    : "正常区间 " + bc.lo[bci].toFixed(1) + "~" + bc.hi[bci].toFixed(1) + "（低体重、超重记 80 分，≥" + bc.ob[bci].toFixed(1) + " 记肥胖 60 分）";
   const vt = T[K("vital", sex)], vci = colIndex(vt.cols, g);
-  $("vitalHint").textContent = "100 分线 " + valueAtScore(vt, vci, 100) + " mL，60 分线 " + valueAtScore(vt, vci, 60) + " mL";
+  $("vitalHint").textContent = "100 分线 " + valueAtScore(vt, vci, 100) + " 毫升，60 分线 " + valueAtScore(vt, vci, 60) + " 毫升";
 
   /* 参考档位提示 */
   const tier = $("tierSel").value;
@@ -1332,38 +1432,38 @@ function bmiTableHTML(){
 }
 function renderCNRules(){
   const g = state.g, sex = SEXMAP[state.sex], st = stageOf(g);
-  $("rulesSummary").textContent = "评分表（附表 1-1 ~ 2-6，蓝色列即当前适用标准）";
-  $("rulesIntro").textContent = "下列表格取自教育部《国家学生体质健康标准（2014 年修订）》附件（教体艺〔2014〕5 号）。《标准》学年总分 = 标准分（各单项得分 × 权重求和，满分 100）+ 附加分（最多 20）。总分以 100 分为满分线，加分可使总分超过 100（最高 120）。90.0 分及以上优秀，80.0—89.9 良好，60.0—79.9 及格，59.9 分及以下不及格。小学的加分指标为 1 分钟跳绳（最多 +20）；初中、高中、大学的加分指标为男生引体向上与 1000 米跑、女生 1 分钟仰卧起坐与 800 米跑（各最多 +10）。";
+  $("rulesSummary").textContent = "评分表（表 1-1 ~ 表 2-6，高亮列即当前适用标准）";
+  $("rulesIntro").textContent = "下列表格取自教育部《国家学生体质健康标准（2014 年修订）》附件（教体艺〔2014〕5 号）。《标准》学年总分 = 标准分（各单项得分 × 权重求和，满分 100）+ 附加分（最多 20）。总分以 100 分为满分线，加分可使总分超过 100（最高 120）。90.0 分及以上优秀，80.0～89.9 良好，60.0～79.9 及格，59.9 分及以下不及格。小学的加分指标为 1 分钟跳绳（最多 +20）；初中、高中、大学的加分指标为男生引体向上与 1000 米跑、女生 1 分钟仰卧起坐与 800 米跑（各最多 +10）。";
   const isM = state.sex === "male";
   let h = bmiTableHTML();
-  h += tableHTML(K("vital", sex), "表 1-" + (isM ? 3 : 4) + "　肺活量单项评分表", "mL");
+  h += tableHTML(K("vital", sex), "表 1-" + (isM ? 3 : 4) + "　肺活量单项评分表", "毫升");
   h += tableHTML(K("sprint", sex), "表 1-" + (isM ? 5 : 6) + "　50 米跑单项评分表", "秒，用时越短得分越高");
-  h += tableHTML(K("sitreach", sex), "表 1-" + (isM ? 7 : 8) + "　坐位体前屈单项评分表", "cm");
+  h += tableHTML(K("sitreach", sex), "表 1-" + (isM ? 7 : 8) + "　坐位体前屈单项评分表", "厘米");
   if (st !== "mid"){
     h += tableHTML(K("rope", sex), "表 1-" + (isM ? 9 : 10) + "　一分钟跳绳单项评分表", "次");
   }
   if (st === "mid" || st === "p56"){
     if (st === "mid"){
-      h += tableHTML(K("stand", sex), "表 1-" + (isM ? 11 : 12) + "　立定跳远单项评分表", "cm");
-      h += tableHTML(isM ? "pullM" : "situpF", "表 1-" + (isM ? 13 : 14) + "　" + (isM ? "引体向上" : "一分钟仰卧起坐") + "单项评分表", "次");
-      h += tableHTML(K("endur", sex), "表 1-" + (isM ? 15 : 16) + "　" + (isM ? "1000 米跑" : "800 米跑") + "单项评分表", "分·秒");
+      h += tableHTML(K("stand", sex), "表 1-" + (isM ? 11 : 12) + "　立定跳远单项评分表", "厘米");
+      h += tableHTML(isM ? "pullM" : "situpF", "表 1-" + (isM ? 13 : 14) + "　" + (isM ? "男生一分钟仰卧起坐、引体向上" : "女生一分钟仰卧起坐") + "单项评分表", "次");
+      h += tableHTML(K("endur", sex), "表 1-" + (isM ? 15 : 16) + "　" + (isM ? "男生耐力跑" : "女生耐力跑") + "单项评分表", "分·秒");
     } else {
-      h += tableHTML(isM ? "pullM" : "situpF", "表 1-" + (isM ? 13 : 14) + "　一分钟仰卧起坐单项评分表", "次");
-      h += tableHTML(K("endur", sex), "表 1-" + (isM ? 15 : 16) + "　50 米 × 8 往返跑单项评分表", "分·秒");
+      h += tableHTML(isM ? "pullM" : "situpF", "表 1-" + (isM ? 13 : 14) + "　" + (isM ? "男生一分钟仰卧起坐、引体向上" : "女生一分钟仰卧起坐") + "单项评分表", "次");
+      h += tableHTML(K("endur", sex), "表 1-" + (isM ? 15 : 16) + "　" + (isM ? "男生耐力跑" : "女生耐力跑") + "单项评分表", "分·秒");
     }
   } else if (st === "p34"){
-    h += tableHTML(isM ? "pullM" : "situpF", "表 1-" + (isM ? 13 : 14) + "　一分钟仰卧起坐单项评分表", "次");
+    h += tableHTML(isM ? "pullM" : "situpF", "表 1-" + (isM ? 13 : 14) + "　" + (isM ? "男生一分钟仰卧起坐、引体向上" : "女生一分钟仰卧起坐") + "单项评分表", "次");
   }
 
   h += '<h3>附加分规则</h3>';
   if (st === "mid"){
-    h += '<details><summary>表 2-' + (isM ? 3 : 4) + '　' + (isM ? "男生引体向上" : "女生一分钟仰卧起坐") + '加分表</summary>' +
+    h += '<details><summary>表 2-' + (isM ? 3 : 4) + '　' + (isM ? "男生引体向上" : "女生一分钟仰卧起坐") + '评分表</summary>' +
       '<p>成绩超过单项 100 分标准后，' + (isM ? "每多 1 个加 1 分（最多 +10）" : "每多 2 次加 1 分、6 次后每多 1 次加 1 分（最多 +10）") + '。</p></details>';
     const steps = isM ? [4,8,12,16,20,23,26,29,32,35] : [5,10,15,20,25,30,35,40,45,50];
-    h += '<details><summary>表 2-' + (isM ? 5 : 6) + '　' + (isM ? "男生 1000 米跑" : "女生 800 米跑") + '加分表</summary><p>';
+    h += '<details><summary>表 2-' + (isM ? 5 : 6) + '　' + (isM ? "男生 1000 米跑" : "女生 800 米跑") + '评分表</summary><p>';
     h += steps.map((s, i) => "快 " + s + "″ 加 " + (i + 1) + " 分").join("，") + "（最多 +10）。</p></details>";
   } else {
-    h += '<details><summary>表 2-' + (isM ? 1 : 2) + '　一分钟跳绳加分表</summary>' +
+    h += '<details><summary>表 2-' + (isM ? 1 : 2) + '　' + (isM ? "男生一分钟跳绳评分表" : "女生一分钟跳绳评分表") + '</summary>' +
       '<p>成绩超过 100 分标准后，每多 2 次加 1 分，最多 +20（即多跳 40 次）。</p></details>';
   }
   $("ruleTables").innerHTML = h;
@@ -1409,16 +1509,16 @@ const BJ_S1_ROWS = [
   ["0",   "6′00″", "5′36″", "",   "2",  "",   "12", "2.4", "2.3", "81",  "81",  "7",  "5",  "1.59", "1.20"]
 ];
 const BJ_S2_COLS = [
-  { k: "soccer_m", label: "足球运球射门",           unit: "秒",    sex: "m", kind: "sec" },
-  { k: "soccer_f", label: "足球运球射门",           unit: "秒",    sex: "f", kind: "sec" },
-  { k: "basket_m", label: "篮球运球投篮",           unit: "秒",    sex: "m", kind: "sec" },
-  { k: "basket_f", label: "篮球运球投篮",           unit: "秒",    sex: "f", kind: "sec" },
-  { k: "volley_m", label: "排球垫球发球",           unit: "分",    sex: "m", kind: "dec" },
-  { k: "volley_f", label: "排球垫球发球",           unit: "分",    sex: "f", kind: "dec" },
-  { k: "tt_m",     label: "乒乓球左推右攻发球",     unit: "次",    sex: "m", kind: "int" },
-  { k: "tt_f",     label: "乒乓球左推右攻发球",     unit: "次",    sex: "f", kind: "int" },
-  { k: "bad_m",    label: "羽毛球正反手挑球发高远球", unit: "分",   sex: "m", kind: "dec" },
-  { k: "bad_f",    label: "羽毛球正反手挑球发高远球", unit: "分",   sex: "f", kind: "dec" },
+  { k: "soccer_m", label: "足球 — 运球射门",           unit: "秒",    sex: "m", kind: "sec" },
+  { k: "soccer_f", label: "足球 — 运球射门",           unit: "秒",    sex: "f", kind: "sec" },
+  { k: "basket_m", label: "篮球 — 运球投篮",           unit: "秒",    sex: "m", kind: "sec" },
+  { k: "basket_f", label: "篮球 — 运球投篮",           unit: "秒",    sex: "f", kind: "sec" },
+  { k: "volley_m", label: "排球 — 垫球发球",           unit: "分",    sex: "m", kind: "dec" },
+  { k: "volley_f", label: "排球 — 垫球发球",           unit: "分",    sex: "f", kind: "dec" },
+  { k: "tt_m",     label: "乒乓球 — 左推右攻发球",     unit: "次",    sex: "m", kind: "int" },
+  { k: "tt_f",     label: "乒乓球 — 左推右攻发球",     unit: "次",    sex: "f", kind: "int" },
+  { k: "bad_m",    label: "羽毛球 — 正反手挑球发高远球", unit: "分",   sex: "m", kind: "dec" },
+  { k: "bad_f",    label: "羽毛球 — 正反手挑球发高远球", unit: "分",   sex: "f", kind: "dec" },
   { k: "swim_m",   label: "100 米游泳",             unit: "分·秒", sex: "m", kind: "mmss" },
   { k: "swim_f",   label: "100 米游泳",             unit: "分·秒", sex: "f", kind: "mmss" }
 ];
@@ -1563,7 +1663,7 @@ function renderBJ(){
   const i1 = BJ_S1_COLS.findIndex(c => c.k === c1);
   const full1 = bjValueAt(BJ_S1, i1, 8), mid1 = bjValueAt(BJ_S1, i1, 6), low1 = bjValueAt(BJ_S1, i1, 0);
   $("bjQ1").innerHTML =
-    '<div class="field"><label>' + (sex === "m" ? "1000 米跑" : "800 米跑") + '（分 · 秒）</label>' +
+    '<div class="field"><label>' + (sex === "m" ? "1000 米跑" : "800 米跑") + '（分·秒）</label>' +
       '<div class="timebox">' +
         '<input type="number" data-bjk="q1m" min="0" max="30" step="1" placeholder="' + Math.floor(full1 / 60) + '" value="' + (bj.vals.q1m || "") + '"><span>分</span>' +
         '<input type="number" data-bjk="q1s" min="0" max="59" step="1" placeholder="' + String(full1 % 60).padStart(2, "0") + '" value="' + (bj.vals.q1s || "") + '"><span>秒</span>' +
@@ -1589,7 +1689,7 @@ function renderBJ(){
   let in3;
   if (o3.id === "swim"){
     const sec = full3;
-    in3 = '<div class="field"><label>成绩（分 · 秒）</label><div class="timebox">' +
+    in3 = '<div class="field"><label>成绩（分·秒）</label><div class="timebox">' +
       '<input type="number" data-bjk="q3_swim_m" min="0" max="30" step="1" placeholder="' + (sec == null ? "" : Math.floor(sec / 60)) + '" value="' + (bj.vals.q3_swim_m || "") + '"><span>分</span>' +
       '<input type="number" data-bjk="q3_swim_s" min="0" max="59" step="1" placeholder="' + (sec == null ? "" : String(sec % 60).padStart(2, "0")) + '" value="' + (bj.vals.q3_swim_s || "") + '"><span>秒</span>' +
       '</div></div>';
@@ -1711,10 +1811,10 @@ function calcBJ(){
   if (!filled) warns.push(["info", "填写任意一项成绩或勾选动作即开始计分。"]);
   else if (filled < 4) warns.push(["info", "还有 " + (4 - filled) + " 项未填，未填项按 0 分计入。"]);
   if (bj.q3 === "swim"){
-    warns.push(["", "100 米游泳在原表中最高只列到 6 分（其余项目满分 8 分），所以选游泳会少 2 分的潜在空间。"]);
+    warns.push(["", "选 100 米游泳时，2023 评分表该列最高只列到 6 分，本页按 6 分封顶（其余球类项目满分 8 分）。"]);
   }
   if (filled){
-    warns.push(["info", "北京市现场考试按 30 分制计分，官方不设等级；上方“得分率”只作横向参照。体育与健康考试总分 70 分 = 过程性考核 40 分 + 现场考试 30 分，本页只估算现场考试这 30 分。"]);
+    warns.push(["info", "北京市现场考试按 30 分制计分，官方不设等级；上方“得分率”只作横向参照。体育与健康考核评价总分 70 分 = 过程性考核 40 分 + 现场考试 30 分（完整实施后的口径；2021 方案分学段过渡，部分届别总分为 50 或 60 分），本页只估算现场考试这 30 分。"]);
     if (total >= 27) warns.push(["ok", "现场考试拿到 27 分以上，折算满分率 90% 以上。"]);
   }
   $("warnings").innerHTML = warns.map(([cls, t]) =>
@@ -1760,8 +1860,8 @@ function bjMoveTableHTML(){
 }
 function renderBJRules(){
   const sex = bjSex();
-  $("rulesSummary").textContent = "评分表（北京市现场考试，蓝色列即当前适用标准）";
-  $("rulesIntro").textContent = "下列表格取自北京教育考试院 2023 年 11 月 24 日公布的《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》（依据京教体艺〔2021〕31 号方案）。现场考试满分 30 分 = 素质项目Ⅰ（8）+ 素质项目Ⅱ（8）+ 运动能力Ⅰ（8）+ 运动能力Ⅱ（6）；素质项目Ⅰ为必考，其余三类各选考 1 项。成绩达到表中某一档标准即得该档分值，未达最低一档计 0 分。经市教委批准，该标准自公布起试行。";
+  $("rulesSummary").textContent = "评分表（北京市现场考试，高亮列即当前适用标准）";
+  $("rulesIntro").textContent = "下列表格取自北京教育考试院 2023 年 11 月 24 日公布的《北京市义务教育体育与健康考核评价现场考试项目评分标准（试行）》（依据京教体艺〔2021〕31 号方案）。现场考试满分 30 分 = 素质项目Ⅰ（8）+ 素质项目Ⅱ（8）+ 运动能力Ⅰ（8）+ 运动能力Ⅱ（6）；素质项目Ⅰ为必考，其余三类各选考 1 项。成绩达到表中某一档标准即得该档分值，未达最低一档计 0 分。该标准经市教委批准公布，名称标注「（试行）」；现场考试对象为九年级学生，四类各考 1 项。";
   $("ruleTables").innerHTML =
     bjTableHTML("表一　素质项目Ⅰ、Ⅱ（10 项）· 每项 8 分", BJ_S1_COLS, BJ_S1, sex, null) +
     bjTableHTML("表二　运动能力Ⅰ（5 项）及 100 米游泳 · 每项 8 分（游泳最高 6 分）", BJ_S2_COLS, BJ_S2, sex, bj.q3 + "_" + sex) +
