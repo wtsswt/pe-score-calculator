@@ -277,7 +277,73 @@ footer.foot a:hover { color: var(--brand); text-decoration-color: var(--brand); 
   .hint { padding-bottom: 2px; }
 }
 
+/* ---------- 导出成绩图片 ---------- */
+.export-row {
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap;
+}
+.export-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--brand); background: var(--brand); color: #fff;
+  border-radius: 9px; padding: 9px 16px; font-size: 13px; font-weight: 600;
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.export-btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+.export-btn:active { transform: translateY(1px); }
+.export-btn:disabled { opacity: .6; cursor: default; transform: none; }
+.export-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.export-hint { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+/* 成绩图片预览层：不自动下载，由用户手动保存 */
+.img-sheet {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 90;
+  display: none; padding: 18px 14px; overflow: auto;
+  background: rgba(12, 17, 26, .93);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.img-sheet.on { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+body.sheet-open { overflow: hidden; }
+.sheet-tip { text-align: center; line-height: 1.55; max-width: 94vw; }
+.sheet-tip b { display: block; color: #fff; font-size: 15.5px; font-weight: 600; letter-spacing: .01em; }
+.sheet-tip .file {
+  display: block; margin-top: 5px; font-size: 12.5px;
+  color: rgba(255,255,255,.66); word-break: break-all;
+}
+.sheet-tip .note {
+  display: block; margin-top: 3px; font-size: 12px; color: rgba(255,255,255,.45);
+}
+.img-sheet img {
+  max-width: 100%; max-height: 72vh; border-radius: 8px; display: block;
+  box-shadow: 0 18px 44px -18px rgba(0,0,0,.7);
+  -webkit-touch-callout: default;
+}
+.img-sheet button {
+  border: 1px solid rgba(255,255,255,.45); background: rgba(255,255,255,.14); color: #fff;
+  border-radius: 9px; padding: 9px 24px; font-family: inherit; font-size: 13px; cursor: pointer;
+  min-height: 40px;
+}
+.img-sheet button:hover { background: rgba(255,255,255,.22); }
+.img-sheet img, .sheet-tip, .img-sheet button { flex-shrink: 0; }
+/* 矮屏（手机横屏）内容比视口高时，改顶端对齐，否则顶部会被裁掉且无法滚到 */
+@media (max-height: 540px) {
+  .img-sheet.on { justify-content: flex-start; }
+  .img-sheet img { max-height: 58vh; }
+}
+
+/* 轻提示 */
+.toast {
+  position: fixed; left: 50%; bottom: 96px; z-index: 95;
+  transform: translate(-50%, 8px); opacity: 0; pointer-events: none;
+  background: rgba(23, 28, 38, .92); color: #fff; font-size: 13px;
+  padding: 8px 16px; border-radius: 999px; max-width: 86vw; text-align: center;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
 @media print {
+  .export-row, .img-sheet, .toast { display: none !important; }
   body { background: #fff; padding: 0; }
   .gender-pills, .part-reset, .rules, header .btn, .mbar { display: none; }
   .result { position: static; }
@@ -498,6 +564,14 @@ footer.foot a:hover { color: var(--brand); text-decoration-color: var(--brand); 
         </div>
 
         <div class="warnings" id="warnings"></div>
+
+        <div class="export-row">
+          <button class="export-btn" id="saveImg" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            保存成绩图片
+          </button>
+          <span class="export-hint">点击预览大图，再手动保存到相册或电脑</span>
+        </div>
       </div>
     </div>
   </div>
@@ -526,6 +600,18 @@ footer.foot a:hover { color: var(--brand); text-decoration-color: var(--brand); 
   </button>
   <button class="mbar-btn" id="mbarDetail" type="button">明细</button>
 </div>
+
+<!-- 图片预览层：不再自动下载，改为展示大图 + 提示用户手动保存 -->
+<div class="img-sheet" id="imgSheet" role="dialog" aria-modal="true" aria-label="预览成绩图片">
+  <div class="sheet-tip">
+    <b id="sheetTipMain">长按图片 → 保存到相册</b>
+    <span class="file" id="sheetTipFile"></span>
+    <span class="note" id="sheetTipNote"></span>
+  </div>
+  <img id="imgSheetPic" alt="体测成绩图片">
+  <button type="button" id="imgSheetClose">关闭</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
@@ -2077,6 +2163,323 @@ function initMobileBar(){
     }
   }
 }
+/* ================= 导出成绩图片 =================
+   纯 Canvas 2D 绘制，不依赖任何库。所有文字用 measureText 动态排布，
+   避免 macOS（苹方）与 Windows（雅黑）字宽差异导致溢出。 */
+const CARD_W = 1080;
+const CARD_FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",sans-serif';
+const CARD_C = {
+  ink: "#171c26", ink2: "#5b6575", ink3: "#929bab", faint: "#b0b8c4",
+  line: "#e6eaf0", track: "#e2e7ef", box: "#f4f6f9",
+  brand: "#2563eb", over: "#b45309", good: "#0b6b4f", bad: "#b42318"
+};
+/* 明细表里只给数字，图片补上单位更好读 */
+const CARD_UNIT = { vital: " ml", situp: " 次", rope: " 次", pull: " 次", stand: " cm", sprint: " s", sitreach: " cm" };
+/* 等级配色，与页面上 .g-* 的取色保持一致 */
+const CARD_TONE = {
+  excellent: ["#d8f2e9", "#0b6b4f"],
+  good: ["#e2eefb", "#255f9c"],
+  pass: ["#fdf0d9", "#96610a"],
+  fail: ["#fde9e7", "#b42318"],
+  none: ["#eef1f5", "#929bab"]
+};
+const CARD_SCORE_C = { hi: CARD_C.good, "": CARD_C.ink, low: CARD_C.bad, none: CARD_C.ink3 };
+
+function cardDate(){
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
+/* 按当前状态重新取一份纯数据，不解析 DOM，保证图片与页面同源同算法 */
+function cardData(){
+  if (state.std === "bj"){
+    const sex = bjSex();
+    const items = bjScore();
+    const filled = items.filter(i => i.score != null).length;
+    const total = items.reduce((a, i) => a + (i.score || 0), 0);
+    const rate = total / 30 * 100;
+    return {
+      filled: filled > 0,
+      title: "北京市九年级现场考试评分标准（试行）",
+      who: "九年级 · " + (sex === "m" ? "男生" : "女生"),
+      score: filled ? total.toFixed(1) : "0",
+      den: "/ 30",
+      over: false,
+      tag: filled ? "得分率 " + rate.toFixed(1) + "%" : "未填写",
+      tone: !filled ? "none" : rate >= 90 ? "excellent" : rate >= 80 ? "good" : rate >= 60 ? "pass" : "fail",
+      ratio: filled ? Math.max(0, Math.min(1, rate / 100)) : 0,
+      head: ["项目", "成绩", "得分"],
+      rows: items.map(i => ({
+        name: i.short,
+        /* “质量 5.0 + 表现 1”在图片里太长，压成“5.0 + 1”，得分列已给出合计 */
+        txt: i.txt.replace(/质量\s*/, "").replace(/\s*表现\s*/, " "),
+        score: i.score == null ? "—" : i.score.toFixed(1) + " / " + i.max,
+        tone: i.score == null ? "none" : i.score / i.max >= 0.9 ? "hi" : i.score / i.max >= 0.6 ? "" : "low"
+      }))
+    };
+  }
+
+  const g = state.g, sex = SEXMAP[state.sex], vals = readVals();
+  const r = evaluate(g, sex, vals);
+  const gname = (GRADES.filter(x => x[0] === g)[0] || [g, g])[1];
+  return {
+    filled: r.filled > 0,
+    title: "国家学生体质健康标准（2014 年修订）",
+    who: gname + " · " + (state.sex === "male" ? "男生" : "女生"),
+    score: r.filled ? r.total.toFixed(1) : "0",
+    den: "/ 100",
+    over: r.filled && r.total > 100,
+    tag: r.filled ? r.level.text + (r.bonus > 0 ? "　附加分 +" + r.bonus : "") : "未填写",
+    tone: !r.filled ? "none" : r.level.key,
+    ratio: r.filled ? Math.max(0, Math.min(1, r.total / 100)) : 0,
+    head: ["项目", "成绩", "得分"],
+    rows: r.items.map(it => ({
+      name: itemLabel(it.id, sex, g),
+      txt: it.filled ? displayValue(it, g, sex, vals) + (CARD_UNIT[it.id] || "") : "—",
+      score: it.filled ? it.score + " 分" : "—",
+      tone: !it.filled ? "none" : it.score >= 90 ? "hi" : it.score >= 60 ? "" : "low"
+    }))
+  };
+}
+
+function cardRoundRect(g, x, y, w, h, r){
+  const m = Math.min(r, w / 2, h / 2);
+  g.beginPath();
+  g.moveTo(x + m, y);
+  g.lineTo(x + w - m, y); g.arcTo(x + w, y, x + w, y + m, m);
+  g.lineTo(x + w, y + h - m); g.arcTo(x + w, y + h, x + w - m, y + h, m);
+  g.lineTo(x + m, y + h); g.arcTo(x, y + h, x, y + h - m, m);
+  g.lineTo(x, y + m); g.arcTo(x, y, x + m, y, m);
+  g.closePath();
+}
+
+function renderCard(d){
+  const PAD = 84, W = CARD_W, innerW = W - PAD * 2;
+  const ROW_H = 66;
+  /* 版面骨架：总分卡 → 明细表 → 页脚。高度由内容推出来，不在底部留大片空白 */
+  const BOX_Y = 280, BOX_H = 244;
+  const LIST_TOP = BOX_Y + BOX_H + 70;
+  const LAST_BASE = LIST_TOP + 78 + (d.rows.length - 1) * ROW_H;
+  /* 末行墨迹底 → 96 → 日期行 → 38 → 署名行 → 52 底边距 */
+  const H = LAST_BASE + 186;
+
+  /* 2 倍绘制，否则 PNG 里的文字发虚 */
+  const dpr = 2;
+  const cv = document.createElement("canvas");
+  cv.width = W * dpr; cv.height = H * dpr;
+  const g = cv.getContext("2d");
+  g.scale(dpr, dpr);
+  g.textBaseline = "alphabetic";
+
+  /* 背景必须铺实：PNG 默认透明，微信深色模式下会变成黑底 */
+  g.fillStyle = "#ffffff";
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = CARD_C.brand;
+  g.fillRect(0, 0, W, 10);
+
+  /* 抬头 */
+  g.textAlign = "left";
+  g.fillStyle = CARD_C.ink3;
+  g.font = "600 30px " + CARD_FONT;
+  g.fillText("学生体质健康 · 成绩计算器", PAD, 100);
+
+  let ts = 44;
+  g.font = "700 " + ts + "px " + CARD_FONT;
+  while (g.measureText(d.title).width > innerW && ts > 26){
+    ts -= 2;
+    g.font = "700 " + ts + "px " + CARD_FONT;
+  }
+  g.fillStyle = CARD_C.ink;
+  g.fillText(d.title, PAD, 172);
+
+  g.fillStyle = CARD_C.ink2;
+  g.font = "400 33px " + CARD_FONT;
+  g.fillText(d.who, PAD, 224);
+
+  /* 总分卡：数字收到 108px，卡片高度同步压到 244 */
+  const boxX = PAD, boxY = BOX_Y, boxW = innerW, boxH = BOX_H, inPad = 56;
+  g.fillStyle = CARD_C.box;
+  cardRoundRect(g, boxX, boxY, boxW, boxH, 26); g.fill();
+
+  const SCORE_BASE = boxY + 122;
+  g.fillStyle = d.over ? CARD_C.over : CARD_C.brand;
+  g.font = "700 108px " + CARD_FONT;
+  const scoreW = g.measureText(d.score).width;
+  g.fillText(d.score, boxX + inPad, SCORE_BASE);
+
+  g.fillStyle = CARD_C.ink3;
+  g.font = "400 32px " + CARD_FONT;
+  g.fillText(d.den, boxX + inPad + scoreW + 12, SCORE_BASE - 4);
+
+  /* 等级标签 */
+  const tone = CARD_TONE[d.tone] || CARD_TONE.none;
+  g.font = "600 27px " + CARD_FONT;
+  const tagW = g.measureText(d.tag).width + 38, tagY = boxY + 146, tagH = 46;
+  g.fillStyle = tone[0];
+  cardRoundRect(g, boxX + inPad, tagY, tagW, tagH, 12); g.fill();
+  g.fillStyle = tone[1];
+  g.fillText(d.tag, boxX + inPad + 19, tagY + 32);
+
+  /* 进度条 */
+  const barX = boxX + inPad, barY = boxY + 210, barW = boxW - inPad * 2, barH = 14;
+  g.fillStyle = CARD_C.track;
+  cardRoundRect(g, barX, barY, barW, barH, 7); g.fill();
+  if (d.ratio > 0){
+    g.fillStyle = d.over ? CARD_C.over : CARD_C.brand;
+    cardRoundRect(g, barX, barY, Math.max(barH, barW * d.ratio), barH, 7); g.fill();
+  }
+
+  /* 单项列表 */
+  const listTop = LIST_TOP;
+  const colL = boxX + inPad;
+  const colM = boxX + boxW * 0.60;
+  const colR = boxX + boxW - inPad;
+
+  g.fillStyle = CARD_C.ink3;
+  g.font = "500 27px " + CARD_FONT;
+  g.textAlign = "left";  g.fillText(d.head[0], colL, listTop);
+  g.textAlign = "right"; g.fillText(d.head[1], colM, listTop);
+  g.fillText(d.head[2], colR, listTop);
+
+  /* 表头线放在表头与首行的墨迹中点：表头基线 listTop，字头约 -23；首行字头约 listTop+50 */
+  g.strokeStyle = CARD_C.line;
+  g.lineWidth = 1;
+  g.beginPath(); g.moveTo(colL, listTop + 26); g.lineTo(colR, listTop + 26); g.stroke();
+
+  let y = listTop + 78;
+  d.rows.forEach(function(row, i){
+    /* 性别在上方已注明，项目名里的（男）/（女）去掉，省出一截宽度 */
+    const nameTxt = String(row.name).replace(/（男）|（女）/g, "");
+    /* 项目名过长时逐级缩字，不截断 */
+    let ns = 33;
+    g.textAlign = "left";
+    g.font = "400 " + ns + "px " + CARD_FONT;
+    while (g.measureText(nameTxt).width > 436 && ns > 25){
+      ns -= 1;
+      g.font = "400 " + ns + "px " + CARD_FONT;
+    }
+    g.fillStyle = CARD_C.ink;
+    g.fillText(nameTxt, colL, y);
+
+    g.textAlign = "right";
+    g.fillStyle = CARD_C.ink2;
+    g.font = "400 33px " + CARD_FONT;
+    g.fillText(row.txt, colM, y);
+
+    g.fillStyle = CARD_SCORE_C[row.tone] || CARD_C.ink;
+    g.font = "700 33px " + CARD_FONT;
+    g.fillText(row.score, colR, y);
+
+    y += ROW_H;
+    if (i < d.rows.length - 1){
+      /* y 已是下一行基线。汉字墨迹约在 baseline-28 ~ baseline+3，两行之间的空白带中点是
+         下一行基线 -45，画在这里才是真正的“行间”，否则线会穿过下一行文字的上半部分 */
+      g.strokeStyle = "#f2f5f9";
+      g.beginPath(); g.moveTo(colL, y - 45); g.lineTo(colR, y - 45); g.stroke();
+    }
+  });
+
+  /* 页脚两行居中：日期与用途一行，网址与署名一行。只剩两行时左日期右署名会空出左下角 */
+  const fySign = H - 52, fyDate = fySign - 38;
+  g.textAlign = "center";
+  g.fillStyle = CARD_C.ink3;
+  g.font = "400 24px " + CARD_FONT;
+  g.fillText(cardDate() + " 生成 · 仅供自测参考", W / 2, fyDate);
+
+  g.fillStyle = CARD_C.faint;
+  g.font = "400 21px " + CARD_FONT;
+  g.fillText("wtsswt.github.io/pe-score-calculator　·　swt · AI 辅助生成", W / 2, fySign);
+
+  return cv;
+}
+
+function cardFileName(){
+  return (state.std === "bj" ? "北京现场考试_" : "体测成绩_") + cardDate() + ".png";
+}
+
+let toastTimer = 0;
+function toast(msg){
+  const t = $("toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove("on"); }, 2400);
+}
+
+/* 提示文案随设备切换：触屏是长按，桌面是右键另存。每行都短，避免手机上折行 */
+function sheetTip(){
+  const ua = navigator.userAgent;
+  const wx = /MicroMessenger/i.test(ua);
+  const touch = /iPhone|iPad|iPod|Android/i.test(ua) ||
+    (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  if (touch){
+    return {
+      main: "长按图片 → 保存到相册",
+      note: wx ? "若长按无反应：点右上角“…”→ 在浏览器打开" : ""
+    };
+  }
+  return {
+    main: "在图片上右键 → 图片另存为",
+    note: "Mac 上选“将图像存储为…”，也可直接拖到桌面"
+  };
+}
+
+function showImgSheet(cv, name){
+  const sheet = $("imgSheet"), pic = $("imgSheetPic");
+  if (!sheet || !pic) return;
+  const tip = sheetTip();
+  const main = $("sheetTipMain"), file = $("sheetTipFile"), note = $("sheetTipNote");
+  if (main) main.textContent = tip.main;
+  if (file) file.textContent = "文件名：" + name;
+  if (note){ note.textContent = tip.note || ""; note.hidden = !tip.note; }
+  pic.src = cv.toDataURL("image/png");
+  sheet.classList.add("on");
+  document.body.classList.add("sheet-open");
+}
+
+function closeImgSheet(){
+  const sheet = $("imgSheet"), pic = $("imgSheetPic");
+  if (!sheet) return;
+  sheet.classList.remove("on");
+  document.body.classList.remove("sheet-open");
+  /* 清掉 dataURL，避免大图字符串长期占内存 */
+  if (pic) setTimeout(function(){ pic.removeAttribute("src"); }, 260);
+}
+
+/* 只生成并预览，不落盘：存到哪里由用户自己决定 */
+function saveCardImage(){
+  const d = cardData();
+  if (!d.filled){
+    toast("先录入至少一项成绩，再来生成图片");
+    return;
+  }
+  const btn = $("saveImg");
+  const label = btn ? btn.innerHTML : "";
+  if (btn){ btn.disabled = true; btn.textContent = "正在生成…"; }
+  try {
+    const cv = renderCard(d);
+    showImgSheet(cv, cardFileName());
+  } catch (e){
+    toast("图片生成失败：" + (e && e.message ? e.message : "未知错误"));
+  } finally {
+    if (btn){ btn.disabled = false; btn.innerHTML = label; }
+  }
+}
+
+(function initExport(){
+  const btn = $("saveImg");
+  if (btn) btn.addEventListener("click", saveCardImage);
+
+  const sheet = $("imgSheet"), close = $("imgSheetClose");
+  if (close) close.addEventListener("click", closeImgSheet);
+  /* 点击图片外的暗色区域、或按 Esc 也能关掉 */
+  if (sheet) sheet.addEventListener("click", function(e){ if (e.target === sheet) closeImgSheet(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && sheet && sheet.classList.contains("on")) closeImgSheet();
+  });
+})();
+
 initMobileBar();
 </script>
 </body>
