@@ -2429,8 +2429,8 @@ function renderCard(d){
   const BOX_Y = 280, BOX_H = 244;
   const LIST_TOP = BOX_Y + BOX_H + 70;
   const LAST_BASE = LIST_TOP + 78 + (d.rows.length - 1) * ROW_H;
-  /* 末行墨迹底 → 96 → 日期行 → 38 → 署名行 → 52 底边距 */
-  const H = LAST_BASE + 186;
+  /* 页脚只剩一行说明。上下留白取同一值（约等于左右 84 的页边距），页脚才不显得贴底 */
+  const H = LAST_BASE + 188;
 
   /* 2 倍绘制，否则 PNG 里的文字发虚 */
   const dpr = 2;
@@ -2552,16 +2552,24 @@ function renderCard(d){
     }
   });
 
-  /* 页脚两行居中：日期与用途一行，网址与署名一行。只剩两行时左日期右署名会空出左下角 */
-  const fySign = H - 52, fyDate = fySign - 38;
-  g.textAlign = "center";
+  /* 页脚单行：生成日期与用途为主，网址弱化。两段字号不同，手工居中才能对得齐 */
+  const fy = H - 84;
+  const foot1 = cardDate() + " 生成 · 仅供自测参考";
+  const foot2 = "wtsswt.github.io/pe-score-calculator";
+  g.font = "400 24px " + CARD_FONT;
+  const fw1 = g.measureText(foot1).width;
+  g.font = "400 21px " + CARD_FONT;
+  const fw2 = g.measureText(foot2).width;
+  const fgap = 30, fx = (W - (fw1 + fgap + fw2)) / 2;
+
+  g.textAlign = "left";
   g.fillStyle = CARD_C.ink3;
   g.font = "400 24px " + CARD_FONT;
-  g.fillText(cardDate() + " 生成 · 仅供自测参考", W / 2, fyDate);
+  g.fillText(foot1, fx, fy);
 
   g.fillStyle = CARD_C.faint;
   g.font = "400 21px " + CARD_FONT;
-  g.fillText("wtsswt.github.io/pe-score-calculator　·　swt · AI 辅助生成", W / 2, fySign);
+  g.fillText(foot2, fx + fw1 + fgap, fy);
 
   return cv;
 }
